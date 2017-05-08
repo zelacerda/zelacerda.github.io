@@ -1,12 +1,32 @@
 function setup() {
-  createCanvas(640, 480);
+  createCanvas(windowWidth, windowHeight);
+  //frameRate(60);
+  //background(20, 20, 20);
+  fill(0);
+  posX = windowWidth / 2;
+  posY = windowHeight /2;
+  velX = 1;
+  velY = 1;
+  blendMode(REPLACE);
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  //background(20, 20, 20);
 }
 
 function draw() {
-  if (mouseIsPressed) {
-    fill(0);
-  } else {
-    fill(255);
+  ellipse(posX, posY, 80, 80);
+  move();
+}
+
+function move() {
+  posX += velX;
+  if (posX > windowWidth) {
+    velX *= -1;
   }
-  ellipse(mouseX, mouseY, 80, 80);
+  posY += velY;
+  if (posY > windowHeight) {
+    velY *= -1;
+  }
 }
