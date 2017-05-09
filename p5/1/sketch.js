@@ -33,9 +33,9 @@ function Bola(size) {
         if (this.y > windowHeight - this.size/2 || this.y < this.size/2) {
             this.yVel *= -1;
         }
-        
+    }
+    
     this.draw = function() {
         ellipse(this.x, this.y, this.size, this.size)
-    }
     }
 }
