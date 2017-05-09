@@ -1,12 +1,11 @@
 function setup() {
     createCanvas(windowWidth, windowHeight);
     fill(255);
-    bola = new Bola(50);  
+    bola = new Bola();  
 }
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
-    //background(20, 20, 20);
 }
 
 function draw() {
@@ -16,8 +15,8 @@ function draw() {
 }
 
 // The Bola class
-function Bola(size) {
-    this.size = size;
+function Bola() {
+    this.size = random(40) + 10;
     this.x = windowWidth / 2;
     this.y = windowHeight / 2;
     this.xVel = random(-3, 3);
