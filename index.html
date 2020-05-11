@@ -45,7 +45,7 @@ Clique no botão abaixo para gerar uma nova cartela de bingo:
 <span>Código da cartela: <span id="ticket_no"></span></span>
 
 <script type="text/python">
-from browser import document
+from browser import document, alert
 from browser.html import TABLE, TR, TD
 from bingo import generate_ticket, to_string
 
@@ -61,6 +61,22 @@ def clica(event):
     document["ticket_no"].textContent = str(num)
     document["ticket"].clear()
     document["ticket"] <= cria_tabela(numeros)
+
+    for numero in document.select("td"):
+        numero.bind("click", muda_cor)
+
+def alterna_cor(color):
+    if color == "rgb(0, 204, 0)":
+        return "rgb(204, 204, 204)"
+    else:
+        return "rgb(0, 204, 0)"
+
+def muda_cor(event):
+    element = event.target
+    content = element.textContent
+    if content != "":
+        color = element.style.backgroundColor
+        element.style.backgroundColor = alterna_cor(color)
 
 tabela = TABLE()
 for row in range(3):
