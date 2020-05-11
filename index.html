@@ -12,10 +12,18 @@
 
 body{
     font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
+    text-align: center;
+}
+
+button{
+    font-size: 24px;
 }
 
 table{
-    font-size: 30px;
+    font-size: 45px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 td{
@@ -24,8 +32,8 @@ td{
     border-radius: 0.2em;
     text-align: center;
     cursor: default;
-    width: 50px;
-    height: 50px;
+    width: 80px;
+    height: 80px;
 }
 
 </style>
@@ -34,15 +42,17 @@ td{
 
 <h1>BINGO!</h1>
 
-Clique no botão abaixo para gerar uma nova cartela de bingo:
-<br><br>
-<button id="botao">Nova</button>
+Clique
+<button id="botao">aqui</button>
+para gerar uma nova cartela de bingo.
 
 <br><br>
 
-<div id="ticket"></div>
+<div id="ticket"></div><br>
 
-<span>Código da cartela: <span id="ticket_no"></span></span>
+<span id="codigo" style="display:none">Código da cartela:
+    <span id="ticket_no" style="font-weight: bold;"></span>
+</span>
 
 <script type="text/python">
 from browser import document, alert
@@ -61,6 +71,7 @@ def clica(event):
     document["ticket_no"].textContent = str(num)
     document["ticket"].clear()
     document["ticket"] <= cria_tabela(numeros)
+    document["codigo"].style.display = "inline"
 
     for numero in document.select("td"):
         numero.bind("click", muda_cor)
