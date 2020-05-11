@@ -1,118 +1,75 @@
-<!DOCTYPE html>
-<html lang="br">
+<!doctype html>
+<html>
+
 <head>
-        <meta charset="utf-8" />
-        <title>Zé Lacerda</title>
-        <link rel="stylesheet" href="https://zelacerda.github.io/theme/css/main.css" />
+    <title>Gerador de cartelas de bingo</title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="brython.js"></script>
+    <script type="text/javascript" src="brython_stdlib.js"></script>
 </head>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="https://zelacerda.github.io/">Zé Lacerda </a></h1>
-                <nav><ul>
-                    <li><a href="https://zelacerda.github.io/category/blog.html">blog</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
+<style>
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="https://zelacerda.github.io/o-ministro-maluquinho.html">O Ministro Maluquinho</a></h1>
-<footer class="post-info">
-        <abbr class="published" title="2019-01-10T19:00:00-02:00">
-                Published: qui 10 janeiro 2019
-        </abbr>
+body{
+    font-family: Arial, Helvetica, sans-serif;
+}
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="https://zelacerda.github.io/author/zelacerda.html">zelacerda</a>
-        </address>
-<p>In <a href="https://zelacerda.github.io/category/blog.html">blog</a>.</p>
+table{
+    font-size: 30px;
+}
 
-</footer><!-- /.post-info --><p>Era uma vez um ministro maluquinho.</p>
-<p>Ele tinha o olho maior que a barriga (pra enxergar comunismo em todo o lugar).</p>
-<p>Tinha ideias de vento na cabeça.</p>
-<p>Umas pernas enormes (que davam pra esmagar o mundo globalista).</p>
-<p>E olavinhos no sótão.</p>
-<p>Era um ministro impossível!</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+td{
+    background-color: #ccc;
+    padding: 10px 10px 10px 10px;
+    border-radius: 0.2em;
+    text-align: center;
+    cursor: default;
+    width: 50px;
+    height: 50px;
+}
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="https://zelacerda.github.io/feliz-ano-novo.html" rel="bookmark"
-                           title="Permalink to Feliz Ano Novo">Feliz Ano Novo</a></h1>
-                </header>
+</style>
 
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2018-12-26T21:00:00-02:00">
-                Published: qua 26 dezembro 2018
-        </abbr>
+<body onload="brython()">
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="https://zelacerda.github.io/author/zelacerda.html">zelacerda</a>
-        </address>
-<p>In <a href="https://zelacerda.github.io/category/blog.html">blog</a>.</p>
+<h1>BINGO!</h1>
 
-</footer><!-- /.post-info -->                <p>Semana passada, saindo do trabalho, vejo dois homens brigando na calçada oposta à minha. Não essas brigas violentas, de pitbulls, MMA, socos certeiros e sangue. Mas com certo contato físico desajeitado. Pelas roupas parecem dois garçons do mesmo bar logo a frente. Provavelmente minutos depois voltarão a servir as mesas …</p>
-                <a class="readmore" href="https://zelacerda.github.io/feliz-ano-novo.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
+Clique no botão abaixo para gerar uma nova cartela de bingo:
+<br><br>
+<button id="botao">Nova</button>
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="https://zelacerda.github.io/e-preciso-amar-os-eleitores-do-bolsonaro.html" rel="bookmark"
-                           title="Permalink to É preciso amar... os eleitores do Bolsonaro">É preciso amar... os eleitores do Bolsonaro</a></h1>
-                </header>
+<br><br>
 
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2018-10-07T13:00:00-03:00">
-                Published: dom 07 outubro 2018
-        </abbr>
+<div id="ticket"></div>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="https://zelacerda.github.io/author/zelacerda.html">zelacerda</a>
-        </address>
-<p>In <a href="https://zelacerda.github.io/category/blog.html">blog</a>.</p>
+<span>Código da cartela: <span id="ticket_no"></span></span>
 
-</footer><!-- /.post-info -->                <p>Recomendo que se exponham ao vídeo no final deste texto, mesmo que indigesto e assustador (ao menos pro meu gosto). Recomendo que leiam os comentários também. Note como o vídeo provoca reações diametralmente diferentes entre você e a plateia.</p>
-<p>Danilo Gentili é aluno de Olavo de Carvalho, personagem por quem …</p>
-                <a class="readmore" href="https://zelacerda.github.io/e-preciso-amar-os-eleitores-do-bolsonaro.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-                </ol><!-- /#posts-list -->
-                </section><!-- /#content -->
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="http://getpelican.com/">Pelican</a></li>
-                            <li><a href="http://python.org/">Python.org</a></li>
-                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-                            <li><a href="#">You can modify those links in your config file</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
+<script type="text/python">
+from browser import document
+from browser.html import TABLE, TR, TD
+from bingo import generate_ticket, to_string
 
-                            <li><a href="https://github.com/zelacerda">Github</a></li>
-                            <li><a href="https://www.linkedin.com/in/zelacerda">LinkedIn</a></li>
-                            <li><a href="https://www.facebook.com/zelacerda">Facebook</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
+def cria_tabela(lista):
+    tabela = TABLE()
+    for row in range(3):
+        tabela <= TR(TD(f"{lista[row][column]}") for column in range(9))
+    return tabela
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
+def clica(event):
+    num, ticket = generate_ticket()
+    numeros = to_string(ticket)
+    document["ticket_no"].textContent = str(num)
+    document["ticket"].clear()
+    document["ticket"] <= cria_tabela(numeros)
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
+tabela = TABLE()
+for row in range(3):
+    tabela <= TR(TD() for column in range(9))
+document["ticket"] <= tabela
 
+document["botao"].bind("click", clica)
+
+</script>
 </body>
+
 </html>
