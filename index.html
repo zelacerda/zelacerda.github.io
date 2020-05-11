@@ -22,7 +22,7 @@ Versão 1.0
 """
 
 import random
-from browser import document, alert
+from browser import document, window
 from browser.html import TABLE, TR, TD
 
 
@@ -87,19 +87,26 @@ def cria_tabela(lista):
     return tabela
 
 
-def clica(event):
+def cria_cartela(ticket_number):
     """
-    Handler para gerar uma nova cartela ao clicar no botão.
+    Gera a cartela de número ticker_number
     """
-    num, ticket = generate_ticket()
+    num, ticket = generate_ticket(ticket_number)
     numeros = to_string(ticket)
     document["ticket_no"].textContent = str(num)
     document["ticket"].clear()
     document["ticket"] <= cria_tabela(numeros)
     document["codigo"].style.display = "inline"
-
     for numero in document.select("td"):
         numero.bind("click", muda_cor)
+
+
+def clica(event):
+    """
+    Handler para gerar uma cartela aleatória ao clicar no botão.
+    """
+    ticket_number = random.randint(1, 9999)
+    window.location.search = f"?{ticket_number}"
 
 
 def alterna_cor(color):
@@ -125,15 +132,18 @@ def muda_cor(event):
 
 def inicio():
     """
-    Inicia a aplicação com uma tabela vazia.
+    Inicia a aplicação.
     """
-    global document
-    tabela = TABLE()
+    search = window.location.search[1:]  # Número da cartela
 
-    for row in range(3):
-        tabela <= TR(TD() for column in range(9))
+    try:
+        cria_cartela(int(search))
+    except:  # Cartela vazia
+        tabela = TABLE()
+        for row in range(3):
+            tabela <= TR(TD() for column in range(9))
+        document["ticket"] <= tabela
 
-    document["ticket"] <= tabela
     document["botao"].bind("click", clica)
 
 
