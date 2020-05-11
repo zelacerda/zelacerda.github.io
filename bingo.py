@@ -6,9 +6,14 @@ def generate_ticket(ticket_number=None):
         ticket_number = random.randint(1, 9999)
     random.seed(ticket_number)
 
+    valid = False
 
-    lines = [random.sample(range(9), 5) for _ in range(3)]
-    tens_counts = [sum([d in line for line in lines]) for d in range(9)]
+    while not valid:
+        lines = [random.sample(range(9), 5) for _ in range(3)]
+        tens_counts = [sum([d in line for line in lines]) for d in range(9)]
+        if 0 not in tens_counts:
+            valid = True
+
     pos = sorted([(c, i) for i, l in enumerate(lines) for c in l])
 
     numbers = []
