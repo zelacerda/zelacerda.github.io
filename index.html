@@ -1,55 +1,17 @@
 <!doctype html>
-<html>
 
+<html>
 <head>
     <title>Gerador de cartelas de bingo</title>
     <meta charset="utf-8">
     <script type="text/javascript" src="brython.js"></script>
     <script type="text/javascript" src="brython_stdlib.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-
-<style>
-
-body{
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 32px;
-    text-align: center;
-}
-
-button{
-    font-size: 24px;
-}
-
-table{
-    font-size: 45px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-td{
-    background-color: #ccc;
-    padding: 10px 10px 10px 10px;
-    border-radius: 0.2em;
-    text-align: center;
-    cursor: default;
-    width: 80px;
-    height: 80px;
-}
-
-</style>
-
 <body onload="brython()">
-
 <h1>BINGO!</h1>
-
-Clique
-<button id="botao">aqui</button>
-para gerar uma nova cartela de bingo.
-
-<br><br>
-
-<div id="ticket"></div><br>
-
+Clique <button id="botao">aqui</button> para gerar uma nova cartela de bingo.
+<br><br><div id="ticket"></div><br>
 <span id="codigo" style="display:none">Código da cartela:
     <span id="ticket_no" style="font-weight: bold;"></span>
 </span>
@@ -178,8 +140,7 @@ def inicio():
 
 
 inicio()
-
 </script>
-</body>
 
+</body>
 </html>
