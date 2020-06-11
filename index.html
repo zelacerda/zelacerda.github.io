@@ -22,7 +22,7 @@ Versão 1.0
 """
 
 import random
-from browser import document, window
+from browser import document, window, bind
 from browser.html import TABLE, TR, TD
 
 
@@ -101,22 +101,13 @@ def cria_cartela(ticket_number):
         numero.bind("click", muda_cor)
 
 
+@bind(document["botao"], "click")
 def clica(event):
     """
     Handler para gerar uma cartela aleatória ao clicar no botão.
     """
     ticket_number = random.randint(1, 9999)
     window.location.search = f"?{ticket_number}"
-
-
-def alterna_cor(color):
-    """
-    Alterna as cores das células (marcada <=> não marcada).
-    """
-    if color == "rgb(100, 150, 255)":
-        return "rgb(204, 204, 204)"
-    else:
-        return "rgb(100, 150, 255)"
 
 
 def muda_cor(event):
@@ -126,8 +117,10 @@ def muda_cor(event):
     element = event.target
     content = element.textContent
     if content != "":
-        color = element.style.backgroundColor
-        element.style.backgroundColor = alterna_cor(color)
+        if element.class_name != "active":
+            element.class_name = "active"
+        else:
+            element.class_name = "inactive"
 
 
 def inicio():
@@ -143,9 +136,6 @@ def inicio():
         for row in range(3):
             tabela <= TR(TD() for column in range(9))
         document["ticket"] <= tabela
-
-    document["botao"].bind("click", clica)
-
 
 inicio()
 </script>
