@@ -23,5 +23,5 @@ Ideias pra melhorar este experimento:
 * Verificar se é possível implementar *Syntax highlighting*;
 * Emojis :)
 
-**Exiba o código fonte desta página para ver com o Brython funciona!**
+**Exiba o código fonte desta página para ver como o Brython funciona!**
 '''
