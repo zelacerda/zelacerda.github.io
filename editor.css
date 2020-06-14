@@ -1,0 +1,54 @@
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0%;
+}
+
+code{
+    font-family: Consolas,"courier new";
+    background-color: #333;
+    color: #fc9;
+    padding: 2px;
+    font-size: 105%;
+    border-radius: 2px;
+    font-size: 0.9em;
+}
+
+.block{
+    font-family: Consolas,"courier new";
+    color: #fc9;
+    background-color: #333;
+    padding: 5px;
+    font-size: 105%;
+    border-radius: 5px;
+}
+
+#editor{
+    background-color: black;
+    color: #fc9;
+    padding: 10px;
+    width: 95%;
+    height: 500px;
+    resize: none;
+    border-radius: 5px;
+}
+
+#render{
+    background-color: #eee;
+    color: #111;
+    padding: 10px;
+    width: 100%;
+    height: 500px;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+
+.titulo{
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.area{
+    width: 48%;
+    margin: 5px;
+    float: left;
+}
