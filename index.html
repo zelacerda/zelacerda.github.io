@@ -81,10 +81,10 @@ def cria_tabela(lista):
     """
     Retorna o HTML de uma tabela com a cartela pronta.
     """
-    tabela = TABLE()
+    tab = TABLE()
     for row in range(3):
-        tabela <= TR(TD(f"{lista[row][column]}") for column in range(9))
-    return tabela
+        tab <= TR(TD(f"{lista[row][col]}", Class="inactive") for col in range(9))
+    return tab
 
 
 def cria_cartela(ticket_number):
@@ -97,8 +97,6 @@ def cria_cartela(ticket_number):
     document["ticket"].clear()
     document["ticket"] <= cria_tabela(numeros)
     document["codigo"].style.display = "inline"
-    for numero in document.select("td"):
-        numero.bind("click", muda_cor)
 
 
 @bind(document["botao"], "click")
@@ -110,6 +108,7 @@ def clica(event):
     window.location.search = f"?{ticket_number}"
 
 
+@bind("div", "click")
 def muda_cor(event):
     """
     Handler  para alternar a cor de uma célula com números clicada.
@@ -117,10 +116,10 @@ def muda_cor(event):
     element = event.target
     content = element.textContent
     if content != "":
-        if element.class_name != "active":
-            element.class_name = "active"
-        else:
+        if element.class_name == "active":
             element.class_name = "inactive"
+        elif element.class_name == "inactive":
+            element.class_name = "active"
 
 
 def inicio():
