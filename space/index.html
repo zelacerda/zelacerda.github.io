@@ -1,14 +1,8 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Space Rescue</title>
-        <meta charset="utf-8">
-        <script type="text/javascript" src="../brython.js"></script>
-        <script type="text/javascript" src="../brython_stdlib.js"></script>
-        <link rel="stylesheet" type="text/css" href="space.css">
-    </head>
-    <body onload="brython()">
-        <script type="text/python">
+<html><head><title>Space Rescue</title><meta charset="utf-8">
+<script type="text/javascript" src="../brython.js"></script>
+<script type="text/javascript" src="../brython_stdlib.js"></script>
+<link rel="stylesheet" type="text/css" href="space.css">
+</head><body onload="brython()"><script type="text/python">
 
 from math import radians, sin, cos
 
@@ -16,47 +10,39 @@ from browser import document as doc
 from browser.html import SVG, DIV, P, AUDIO
 from browser import svg, bind, timer
 
-KEYRIGHT = 39
-KEYLEFT = 37
-KEYUP = 38
+KEYCODE = {39:'right', 37:'left', 38:'up'}
 
 def to_vector(angle):
     rad = radians(angle)
-    xcomp = cos(rad)
-    ycomp = sin(rad)
-    return xcomp, ycomp
+    return cos(rad), sin(rad)
 
 
 class Ship:
     def __init__(self):
         self.x = 400
         self.y = 300
-        self.image = svg.image(href='ship0.png',
-                                     x=self.x,
-                                     y=self.y)
+        self.img = svg.image(href='ship0.png',x=self.x,y=self.y)
         self.xvel = 0
         self.yvel = 0
         self.acc = 0
         self.angle = 0
-        self.key_right = False
-        self.key_left = False
-        self.key_up = False
+        self.key = dict(right=False,left=False,up=False)
 
     def update_angle(self):
-        if self.key_right is True:
+        if self.key['right'] is True:
             self.angle += 3
-        if self.key_left is True:
+        if self.key['left'] is True:
             self.angle -= 3
-        self.image.attrs['transform'] = f'rotate({self.angle}, {self.x}, {self.y})'
+        self.img.attrs['transform'] = f'rotate({self.angle}, {self.x}, {self.y})'
 
     def update_vel(self):
-        if self.key_up is True:
+        if self.key['up'] is True:
             self.acc = 0.2
-            self.image.attrs['href'] = 'assets/ship1.png'
+            self.img.attrs['href'] = 'assets/ship1.png'
             doc['thrust'].play()
         else:
             self.acc = 0.0
-            self.image.attrs['href'] = 'assets/ship0.png'
+            self.img.attrs['href'] = 'assets/ship0.png'
             doc['thrust'].load()
             doc['thrust'].pause()
         self.xvel += self.acc * to_vector(self.angle)[0]
@@ -69,8 +55,8 @@ class Ship:
         self.y += self.yvel
         self.x %= 800
         self.y %= 600
-        self.image.attrs['x'] = self.x - 45
-        self.image.attrs['y'] = self.y - 45
+        self.img.attrs['x'] = self.x - 45
+        self.img.attrs['y'] = self.y - 45
 
     def update(self):
         self.update_angle()
@@ -81,22 +67,14 @@ class Ship:
 @bind(doc, 'keydown')
 def keydown(evt):
     key = evt.keyCode
-    if key == KEYRIGHT:
-        ship.key_right = True
-    elif key == KEYLEFT:
-        ship.key_left = True
-    elif key == KEYUP:
-        ship.key_up = True
+    if key in KEYCODE:
+        ship.key[KEYCODE[key]] = True
 
 @bind(doc, 'keyup')
 def keyup(evt):
     key = evt.keyCode
-    if key == KEYRIGHT:
-        ship.key_right = False
-    elif key == KEYLEFT:
-        ship.key_left = False
-    elif key == KEYUP:
-        ship.key_up = False
+    if key in KEYCODE:
+        ship.key[KEYCODE[key]] = False
 
 def update():
     ship.update()
@@ -108,10 +86,9 @@ def main():
     doc <= DIV(id='frame')
     doc['frame'] <= SVG(id='area')
     doc <= AUDIO(id='thrust', src='assets/thrust.wav')
-    doc['area'] <= ship.image
+    doc['area'] <= ship.img
     timer.set_interval(update, 20)
 
 main()
-        </script>
-    </body>
-</html>
+
+</script></body></html>
