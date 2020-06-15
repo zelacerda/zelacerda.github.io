@@ -1,13 +1,13 @@
 <html><head><title>Space Rescue</title><meta charset="utf-8">
 <script type="text/javascript" src="../brython.js"></script>
 <script type="text/javascript" src="../brython_stdlib.js"></script>
-<link rel="stylesheet" type="text/css" href="space.css">
-</head><body onload="brython()"><script type="text/python">
+<link rel="stylesheet" type="text/css" href="space.css"></head>
+<body onload="brython()"><script type="text/python">
 
 from math import radians, sin, cos
 
 from browser import document as doc
-from browser.html import SVG, DIV, P, AUDIO
+from browser.html import SVG, DIV, AUDIO
 from browser import svg, bind, timer
 
 KEYCODE = {39:'right', 37:'left', 38:'up'}
@@ -21,7 +21,7 @@ class Ship:
     def __init__(self):
         self.x = 400
         self.y = 300
-        self.img = svg.image(href='ship0.png',x=self.x,y=self.y)
+        self.img = svg.image(x=self.x,y=self.y)
         self.xvel = 0
         self.yvel = 0
         self.acc = 0
@@ -47,8 +47,6 @@ class Ship:
             doc['thrust'].pause()
         self.xvel += self.acc * to_vector(self.angle)[0]
         self.yvel += self.acc * to_vector(self.angle)[1]
-        self.xvel *= 0.99
-        self.yvel *= 0.99
 
     def update_pos(self):
         self.x += self.xvel
@@ -82,7 +80,7 @@ def update():
 def main():
     global ship
     ship = Ship()
-    doc <= DIV('SPACE RESCUE', id='title')
+    doc <= DIV('SPACE RESCUE - A SMALL PYTHON GAME USING BRYTHON', id='title')
     doc <= DIV(id='frame')
     doc['frame'] <= SVG(id='area')
     doc <= AUDIO(id='thrust', src='assets/thrust.wav')
