@@ -14,6 +14,12 @@ div{
 
 #area{
     width: 800px;
-    height: 600px;
+    height: 500px;
     background-image: url("assets/nebula_blue.png");
+}
+
+#header{
+    width: 800px;
+    height: 10px;
+    background-color: black;
 }

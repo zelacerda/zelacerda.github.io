@@ -1,13 +1,21 @@
-<html><head><title>Space Rescue</title><meta charset="utf-8">
+<html><head><title>Space Rescue - A Small Python Game</title><meta charset="utf-8">
 <script type="text/javascript" src="../brython.js"></script>
 <script type="text/javascript" src="../brython_stdlib.js"></script>
 <link rel="stylesheet" type="text/css" href="space.css"></head>
 <body onload="brython()"><script type="text/python">
+"""
+SPACE RESCUE - A Small Python Game Using Brython
+Version 0.2
+2020 - by zelacerda
+
+Art assets created by Kim Lathrop and freely
+available for non-commercial projects)
+"""
 
 from math import radians, sin, cos
 
 from browser import document as doc
-from browser.html import SVG, DIV, AUDIO
+from browser.html import SVG, DIV, AUDIO, BR
 from browser import svg, bind, timer
 
 KEYCODE = {39:'right', 37:'left', 38:'up'}
@@ -17,10 +25,35 @@ def to_vector(angle):
     return cos(rad), sin(rad)
 
 
+class Fuel:
+    def __init__(self, x, y, full):
+        self.x = x
+        self.y = y
+        self.full = full
+        self.val = full
+        self.bar = svg.rect(
+            x=self.x, y=self.y,
+            width=self.val, height=10, fill='green')
+        self.border = svg.rect(
+            x=self.x, y=self.y,
+            width=self.full, height=10, stroke='white', fill_opacity=0)
+        self.key = dict(right=False,left=False,up=False)
+
+    def update(self):
+        if self.key['up'] is True:
+            self.val -= 1
+            self.val = max(0, self.val)
+            self.bar.attrs['width'] = self.val
+        if 0.15 < self.val / self.full < 0.5:
+            self.bar.attrs['fill'] = 'yellow'
+        elif self.val / self.full <= 0.15:
+            self.bar.attrs['fill'] = 'red'
+
+
 class Ship:
     def __init__(self):
-        self.x = 400
-        self.y = 300
+        self.x = 400 + 45
+        self.y = 250 + 45
         self.img = svg.image(x=self.x,y=self.y)
         self.xvel = 0
         self.yvel = 0
@@ -33,7 +66,8 @@ class Ship:
             self.angle += 3
         if self.key['left'] is True:
             self.angle -= 3
-        self.img.attrs['transform'] = f'rotate({self.angle}, {self.x}, {self.y})'
+        transf = f'rotate({self.angle}, {self.x - 45}, {self.y - 45})'
+        self.img.attrs['transform'] = transf
 
     def update_vel(self):
         if self.key['up'] is True:
@@ -51,10 +85,10 @@ class Ship:
     def update_pos(self):
         self.x += self.xvel
         self.y += self.yvel
-        self.x %= 800
-        self.y %= 600
-        self.img.attrs['x'] = self.x - 45
-        self.img.attrs['y'] = self.y - 45
+        self.x %= 890
+        self.y %= 590
+        self.img.attrs['x'] = self.x - 90
+        self.img.attrs['y'] = self.y - 90
 
     def update(self):
         self.update_angle()
@@ -67,23 +101,27 @@ def keydown(evt):
     key = evt.keyCode
     if key in KEYCODE:
         ship.key[KEYCODE[key]] = True
+        fuel.key[KEYCODE[key]] = True
 
 @bind(doc, 'keyup')
 def keyup(evt):
     key = evt.keyCode
     if key in KEYCODE:
         ship.key[KEYCODE[key]] = False
+        fuel.key[KEYCODE[key]] = False
 
 def update():
     ship.update()
+    fuel.update()
 
 def main():
-    global ship
+    global ship, fuel
     ship = Ship()
-    doc <= DIV('SPACE RESCUE - A SMALL PYTHON GAME USING BRYTHON', id='title')
+    fuel = Fuel(0, 0, 400)
     doc <= DIV(id='frame')
-    doc['frame'] <= SVG(id='area')
     doc <= AUDIO(id='thrust', src='assets/thrust.wav')
+    doc['frame'] <= [SVG(id='header'), BR(), SVG(id='area')]
+    doc['header'] <= [fuel.bar, fuel.border]
     doc['area'] <= ship.img
     timer.set_interval(update, 20)
 
