@@ -10,44 +10,111 @@ Version 0.2
 
 Art assets created by Kim Lathrop and freely
 available for non-commercial projects)
+
+https://opengameart.org/users/omfgdude (energy)
+https://opengameart.org/users/roars-games (astronaut)
+https://opengameart.org/users/osmic (energy2)
+
 """
 
 from math import radians, sin, cos
+from random import randint, uniform
+from time import time
 
 from browser import document as doc
 from browser.html import SVG, DIV, AUDIO, BR
 from browser import svg, bind, timer
 
 KEYCODE = {39:'right', 37:'left', 38:'up'}
+IMG_SHIP = ['assets/ship0.png', 'assets/ship1.png']
+IMG_ENERGY = 'assets/energy.png'
+IMG_ASTRO = 'assets/astro.png'
+SND_THRUST = 'assets/thrust.wav'
 
 def to_vector(angle):
     rad = radians(angle)
     return cos(rad), sin(rad)
 
+def dist(ship_x, ship_y, astro_x, astro_y):
+    dx = (astro_x - 24) - (ship_x - 45)
+    dy = (astro_y - 24) - (ship_y - 45)
+    return ((dx ** 2) + (dy ** 2)) ** 0.5
 
-class Fuel:
-    def __init__(self, x, y, full):
-        self.x = x
-        self.y = y
-        self.full = full
-        self.val = full
-        self.bar = svg.rect(
-            x=self.x, y=self.y,
-            width=self.val, height=10, fill='green')
-        self.border = svg.rect(
-            x=self.x, y=self.y,
-            width=self.full, height=10, stroke='white', fill_opacity=0)
-        self.key = dict(right=False,left=False,up=False)
+def curr_time():
+    return str(round(time() * 1000))
+
+
+class Energy:
+    def __init__(self):
+        self.uid = curr_time()
+        self.x = randint(48, 800)
+        self.y = randint(48, 500)
+        self.img = svg.image(
+            id=self.uid, x=self.x - 48, y=self.y - 48,
+            width=48, height=48, href=IMG_ENERGY)
 
     def update(self):
-        if self.key['up'] is True:
-            self.val -= 1
-            self.val = max(0, self.val)
-            self.bar.attrs['width'] = self.val
+        self.x = randint(48, 800)
+        self.y = randint(48, 500)
+        self.img.attrs['x'] = self.x - 48
+        self.img.attrs['y'] = self.y - 48
+
+
+class Astronaut:
+    def __init__(self, uid):
+        self.uid = uid
+        self.x = randint(20, 780)
+        self.y = randint(20, 480)
+        self.xvel = uniform(-0.5, 0.5)
+        self.yvel = uniform(-0.5, 0.5)
+        self.rot = uniform(-1, 1)
+        self.angle = 0
+        self.oxigen = 48
+        self.img = svg.image(
+            id=self.uid, x=self.x - 48, y=self.y - 48,
+            width=48, height=48, href=IMG_ASTRO)
+        self.bar = svg.rect(
+            id=self.uid + 10000, x=self.x - 48, y=self.y - 55,
+            width=self.oxigen, height=3, fill='green')
+
+
+    def update(self):
+        self.x = (self.x + self.xvel) % 848
+        self.y = (self.y + self.yvel) % 548
+        self.img.attrs['x'] = self.x - 48
+        self.img.attrs['y'] = self.y - 48
+        self.bar.attrs['x'] = self.x - 48
+        self.bar.attrs['y'] = self.y - 55
+        self.angle += self.rot
+        transf = f'rotate({self.angle}, {self.x - 24}, {self.y - 24})'
+        self.img.attrs['transform'] = transf
+
+
+class Fuel:
+    def __init__(self):
+        self.full = 400
+        self.val = self.full
+        self.bar = svg.rect(x=0, y=0, width=self.val, height=10, fill='green')
+        self.border = svg.rect(
+            x=0, y=0, width=self.full, height=10,
+            stroke='white', fill_opacity=0)
+
+    def update(self):
+        self.val = max(0, self.val - 1)
+        self.set_bar()
+
+    def fill(self):
+        self.val = min(self.full, self.val + 50)
+        self.set_bar()
+
+    def set_bar(self):
+        self.bar.attrs['width'] = self.val
         if 0.15 < self.val / self.full < 0.5:
             self.bar.attrs['fill'] = 'yellow'
         elif self.val / self.full <= 0.15:
             self.bar.attrs['fill'] = 'red'
+        else:
+            self.bar.attrs['fill'] = 'green'
 
 
 class Ship:
@@ -55,75 +122,116 @@ class Ship:
         self.x = 400 + 45
         self.y = 250 + 45
         self.img = svg.image(x=self.x,y=self.y)
+        self.snd = AUDIO(id='thrust', src=SND_THRUST)
         self.xvel = 0
         self.yvel = 0
         self.acc = 0
         self.angle = 0
-        self.key = dict(right=False,left=False,up=False)
 
-    def update_angle(self):
-        if self.key['right'] is True:
+    def turn(self, direction):
+        if direction == 'right':
             self.angle += 3
-        if self.key['left'] is True:
+        elif direction == 'left':
             self.angle -= 3
+        self.angle %= 360
+
+    def thrust(self, state):
+        if state == 'on':
+            self.acc = 0.2
+            self.img.attrs['href'] = IMG_SHIP[1]
+            self.snd.play()
+        elif state == 'off':
+            self.acc = 0.0
+            self.img.attrs['href'] = IMG_SHIP[0]
+            self.snd.load()
+            self.snd.pause()
+
+    def update(self):
+        self.xvel += self.acc * to_vector(self.angle)[0]
+        self.yvel += self.acc * to_vector(self.angle)[1]
+        self.x = (self.x + self.xvel) % 890
+        self.y = (self.y + self.yvel) % 590
+        self.img.attrs['x'] = self.x - 90
+        self.img.attrs['y'] = self.y - 90
         transf = f'rotate({self.angle}, {self.x - 45}, {self.y - 45})'
         self.img.attrs['transform'] = transf
 
-    def update_vel(self):
-        if self.key['up'] is True:
-            self.acc = 0.2
-            self.img.attrs['href'] = 'assets/ship1.png'
-            doc['thrust'].play()
-        else:
-            self.acc = 0.0
-            self.img.attrs['href'] = 'assets/ship0.png'
-            doc['thrust'].load()
-            doc['thrust'].pause()
-        self.xvel += self.acc * to_vector(self.angle)[0]
-        self.yvel += self.acc * to_vector(self.angle)[1]
 
-    def update_pos(self):
-        self.x += self.xvel
-        self.y += self.yvel
-        self.x %= 890
-        self.y %= 590
-        self.img.attrs['x'] = self.x - 90
-        self.img.attrs['y'] = self.y - 90
+class Game:
+    def __init__(self):
+        self.ship = Ship()
+        self.fuel = Fuel()
+        self.key = dict(right=False,left=False,up=False)
+        self.energy = Energy()
+        self.astronauts = [Astronaut(uid=i) for i in range(5)]
+        self.frame = DIV(id='frame')
+        self.header = SVG(id='header')
+        self.area = SVG(id='area')
+        self.text = DIV(id='debug')
+        self.score = 0
+
+        self.header <= [self.fuel.bar, self.fuel.border]
+        self.area <= self.energy.img
+        self.area <= [astro.img for astro in self.astronauts]
+        self.area <= [astro.bar for astro in self.astronauts]
+        self.area <= self.ship.img
+        self.frame <= [self.header, BR(), self.area, BR(), self.text]
 
     def update(self):
-        self.update_angle()
-        self.update_vel()
-        self.update_pos()
+        if self.key['up'] is True:
+            self.fuel.update()
+            self.ship.thrust('on')
+        else:
+            self.ship.thrust('off')
+
+        if self.key['left'] is True:
+            self.ship.turn('left')
+
+        if self.key['right'] is True:
+            self.ship.turn('right')
+
+        self.ship.update()
+
+        to_remove = []
+        for astronaut in self.astronauts:
+            astronaut.update()
+            d = dist(self.ship.x, self.ship.y, astronaut.x, astronaut.y)
+            if d < 20:
+                self.score += 100
+                del doc[astronaut.uid]
+                del doc[astronaut.uid + 10000]
+                self.astronauts.remove(astronaut)
+                del astronaut
+
+        d = dist(self.ship.x, self.ship.y, self.energy.x, self.energy.y)
+        if d < 20:
+            self.fuel.fill()
+            self.energy.update()
+
+        debug = ''
+        debug += f'score: {self.score} '
+        debug += f'astronauts: {len(self.astronauts)} '
+
+        self.text.text = debug
 
 
 @bind(doc, 'keydown')
 def keydown(evt):
     key = evt.keyCode
     if key in KEYCODE:
-        ship.key[KEYCODE[key]] = True
-        fuel.key[KEYCODE[key]] = True
+        game.key[KEYCODE[key]] = True
 
 @bind(doc, 'keyup')
 def keyup(evt):
     key = evt.keyCode
     if key in KEYCODE:
-        ship.key[KEYCODE[key]] = False
-        fuel.key[KEYCODE[key]] = False
-
-def update():
-    ship.update()
-    fuel.update()
+        game.key[KEYCODE[key]] = False
 
 def main():
-    global ship, fuel
-    ship = Ship()
-    fuel = Fuel(0, 0, 400)
-    doc <= DIV(id='frame')
-    doc <= AUDIO(id='thrust', src='assets/thrust.wav')
-    doc['frame'] <= [SVG(id='header'), BR(), SVG(id='area')]
-    doc['header'] <= [fuel.bar, fuel.border]
-    doc['area'] <= ship.img
-    timer.set_interval(update, 20)
+    global game
+    game = Game()
+    doc <= game.frame
+    timer.set_interval(game.update, 20)
 
 main()
 
