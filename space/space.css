@@ -10,18 +10,34 @@ div{
     text-align: center;
 }
 
-#area{
+#game-area{
     width: 800px;
     height: 500px;
     background-image: url("assets/nebula_blue.png");
+    font-size: 23px;
+    font-weight: bolder;
 }
 
 #header{
     width: 800px;
-    height: 10px;
+    height: 15px;
     background-color: black;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 #debug{
-    font-size: 14px;
+    font-size: 12px;
+}
+
+#title{
+    font-size: 47px;
+}
+
+#subtitle{
+    font-size: 23px;
+}
+
+#start{
+    font-size: 18px;
 }

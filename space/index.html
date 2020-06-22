@@ -5,16 +5,14 @@
 <body onload="brython()"><script type="text/python">
 """
 SPACE RESCUE - A Small Python Game Using Brython
-Version 0.2
-2020 - by zelacerda
+Version 1.0 - 2020 - by zelacerda
 
-Art assets created by Kim Lathrop and freely
-available for non-commercial projects)
+Ship and background art created by Kim Lathrop and freely
+available for non-commercial projects.
 
-https://opengameart.org/users/omfgdude (energy)
-https://opengameart.org/users/roars-games (astronaut)
-https://opengameart.org/users/osmic (energy2)
-
+OpenGameArt credits:
+Astronaut - https://opengameart.org/users/roars-games
+Energy - https://opengameart.org/users/osmic
 """
 
 from math import radians, sin, cos
@@ -25,7 +23,8 @@ from browser import document as doc
 from browser.html import SVG, DIV, AUDIO, BR
 from browser import svg, bind, timer
 
-KEYCODE = {39:'right', 37:'left', 38:'up'}
+KEYCODE = {39:'right', 37:'left', 38:'up', 32:'space'}
+SPLASH, PLAY, GAME_OVER = 0, 1, 2
 IMG_SHIP = ['assets/ship0.png', 'assets/ship1.png']
 IMG_ENERGY = 'assets/energy.png'
 IMG_ASTRO = 'assets/astro.png'
@@ -35,18 +34,18 @@ def to_vector(angle):
     rad = radians(angle)
     return cos(rad), sin(rad)
 
-def dist(ship_x, ship_y, astro_x, astro_y):
-    dx = (astro_x - 24) - (ship_x - 45)
-    dy = (astro_y - 24) - (ship_y - 45)
+def dist(ship, obj):
+    dx = (obj.x - 24) - (ship.x - 45)
+    dy = (obj.y - 24) - (ship.y - 45)
     return ((dx ** 2) + (dy ** 2)) ** 0.5
 
-def curr_time():
-    return str(round(time() * 1000))
+def milliseconds():
+    return int(round(time() * 1000))
 
 
 class Energy:
     def __init__(self):
-        self.uid = curr_time()
+        self.uid = 'energy'
         self.x = randint(48, 800)
         self.y = randint(48, 500)
         self.img = svg.image(
@@ -69,16 +68,25 @@ class Astronaut:
         self.yvel = uniform(-0.5, 0.5)
         self.rot = uniform(-1, 1)
         self.angle = 0
-        self.oxigen = 48
+        self.full = 48
+        self.oxigen = self.full
         self.img = svg.image(
             id=self.uid, x=self.x - 48, y=self.y - 48,
             width=48, height=48, href=IMG_ASTRO)
         self.bar = svg.rect(
             id=self.uid + 10000, x=self.x - 48, y=self.y - 55,
-            width=self.oxigen, height=3, fill='green')
+            width=self.oxigen, height=3, fill='cyan')
 
+    def set_bar(self):
+        self.bar.attrs['width'] = self.oxigen
+        if self.oxigen / self.full < 0.3:
+            self.bar.attrs['fill'] = 'orange'
+        else:
+            self.bar.attrs['fill'] = 'cyan'
 
     def update(self):
+        self.oxigen = max(0, self.oxigen - 0.05)
+        self.set_bar()
         self.x = (self.x + self.xvel) % 848
         self.y = (self.y + self.yvel) % 548
         self.img.attrs['x'] = self.x - 48
@@ -94,9 +102,9 @@ class Fuel:
     def __init__(self):
         self.full = 400
         self.val = self.full
-        self.bar = svg.rect(x=0, y=0, width=self.val, height=10, fill='green')
+        self.bar = svg.rect(x=50, y=0, width=self.val, height=10, fill='green')
         self.border = svg.rect(
-            x=0, y=0, width=self.full, height=10,
+            x=50, y=0, width=self.full, height=10,
             stroke='white', fill_opacity=0)
 
     def update(self):
@@ -119,9 +127,10 @@ class Fuel:
 
 class Ship:
     def __init__(self):
+        self.uid = 'ship'
         self.x = 400 + 45
         self.y = 250 + 45
-        self.img = svg.image(x=self.x,y=self.y)
+        self.img = svg.image(id=self.uid, x=self.x,y=self.y)
         self.snd = AUDIO(id='thrust', src=SND_THRUST)
         self.xvel = 0
         self.yvel = 0
@@ -159,60 +168,162 @@ class Ship:
 
 class Game:
     def __init__(self):
-        self.ship = Ship()
+        self.key = dict(right=False, left=False, up=False, space=False)
+        self.state = SPLASH
         self.fuel = Fuel()
-        self.key = dict(right=False,left=False,up=False)
-        self.energy = Energy()
-        self.astronauts = [Astronaut(uid=i) for i in range(5)]
+        self.best = 0
         self.frame = DIV(id='frame')
         self.header = SVG(id='header')
-        self.area = SVG(id='area')
-        self.text = DIV(id='debug')
-        self.score = 0
+        self.area = SVG(id='game-area')
 
-        self.header <= [self.fuel.bar, self.fuel.border]
+        tit1 = 'SPACE RESCUE'
+        tit2 = 'A SMALL GAME ABOUT INERTIA'
+        tit3 = 'PRESS SPACE'
+
+        self.splash = [
+            svg.rect(id='box', x=200, y=170, width=410, height=160, opacity=0.7),
+            svg.text(tit1, id='title', x=220, y=230, fill='white'),
+            svg.text(tit2, id='subtitle', x=220, y=270, fill='white'),
+            svg.text(tit3, id='start', x=340, y=310, fill='yellow')
+        ]
+
+        self.area <= self.splash
+
+        txt = ('Use LEFT or RIGHT to turn the ship and UP to rockets. ',
+               'Get fuel and rescue the astronauts before the oxygen runs out. ',
+               'Ver 1.0 - 2020 - by zelacerda')
+        self.text = DIV(txt, id='debug')
+        self.frame <= [self.header, BR(), self.area, BR(), self.text]
+
+        self.lb_lives = svg.text(x=520, y=10, fill='yellow')
+        self.lb_score = svg.text(x=630, y=10, fill='yellow')
+        self.lb_best = svg.text('00000', x=760, y=10, fill='yellow')
+
+        self.header <= [
+            svg.text('FUEL :', x=0, y=10, fill='white'),
+            self.fuel.bar,
+            self.fuel.border,
+            svg.text('LIVES :', x=460, y=10, fill='white'),
+            self.lb_lives,
+            svg.text('SCORE :', x=560, y=10, fill='white'),
+            self.lb_score,
+            svg.text('BEST :', x=700, y=10, fill='white'),
+            self.lb_best]
+
+
+    def start(self):
+        self.ship = Ship()
+        self.energy = Energy()
+        self.fuel.val = self.fuel.full
+        self.fuel.set_bar()
+        self.astronauts = [Astronaut(uid=milliseconds())]
+        self.score = 0
+        self.rescues = 0
+        self.spawn_difficulty = 300
+        self.spawm_time = self.spawn_difficulty
+        self.lives = 3
+        self.state = PLAY
+
+        for elt in self.splash:
+            elt.attrs['visibility'] = 'hidden'
+
         self.area <= self.energy.img
         self.area <= [astro.img for astro in self.astronauts]
         self.area <= [astro.bar for astro in self.astronauts]
         self.area <= self.ship.img
-        self.frame <= [self.header, BR(), self.area, BR(), self.text]
 
-    def update(self):
-        if self.key['up'] is True:
-            self.fuel.update()
-            self.ship.thrust('on')
-        else:
-            self.ship.thrust('off')
 
-        if self.key['left'] is True:
-            self.ship.turn('left')
+    def key_handler(self):
+        if self.state == PLAY:
+            if self.key['up'] is True:
+                self.fuel.update()
+                self.ship.thrust('on')
+            else:
+                self.ship.thrust('off')
 
-        if self.key['right'] is True:
-            self.ship.turn('right')
+            if self.key['left'] is True:
+                self.ship.turn('left')
 
-        self.ship.update()
+            if self.key['right'] is True:
+                self.ship.turn('right')
 
-        to_remove = []
-        for astronaut in self.astronauts:
-            astronaut.update()
-            d = dist(self.ship.x, self.ship.y, astronaut.x, astronaut.y)
-            if d < 20:
-                self.score += 100
-                del doc[astronaut.uid]
-                del doc[astronaut.uid + 10000]
-                self.astronauts.remove(astronaut)
-                del astronaut
+        if self.state in [SPLASH, GAME_OVER] and self.key['space'] is True:
+            self.start()
 
-        d = dist(self.ship.x, self.ship.y, self.energy.x, self.energy.y)
+
+    def spawm_astronaut(self):
+        new_astro = Astronaut(uid=milliseconds())
+        self.astronauts.append(new_astro)
+        self.area <= [new_astro.img, new_astro.bar]
+
+
+
+    def kill_astronaut(self, astronaut):
+        del doc[astronaut.uid]
+        del doc[astronaut.uid + 10000]
+        self.astronauts.remove(astronaut)
+        del astronaut
+
+    def check_astronaut_colision(self, astronaut):
+        d = dist(self.ship, astronaut)
+        if d < 20:
+            self.score += int(astronaut.oxigen / 48 * 100)
+            if self.score > self.best:
+                self.best = self.score
+            self.rescues += 1
+            self.kill_astronaut(astronaut)
+
+    def check_oxygen_level(self, astronaut):
+        if astronaut.oxigen == 0:
+            self.lives -= 1
+            self.kill_astronaut(astronaut)
+
+    def check_energy_colision(self):
+        d = dist(self.ship, self.energy)
         if d < 20:
             self.fuel.fill()
             self.energy.update()
 
-        debug = ''
-        debug += f'score: {self.score} '
-        debug += f'astronauts: {len(self.astronauts)} '
+    def game_over(self):
+        del doc[self.ship.uid]
+        del doc[self.energy.uid]
+        for astronaut in self.astronauts:
+            del doc[astronaut.uid]
+            del doc[astronaut.uid + 10000]
+        self.state = GAME_OVER
 
-        self.text.text = debug
+        self.splash[1].text = 'GAME OVER'
+        self.splash[1].attrs['x'] = 255
+        self.splash[1].attrs['y'] = 260
+        self.splash[0].attrs['visibility'] = 'visible'
+        self.splash[1].attrs['visibility'] = 'visible'
+        self.splash[3].attrs['visibility'] = 'visible'
+
+    def update(self):
+        self.key_handler()
+
+        if self.state == PLAY:
+
+            self.spawm_time -= 1
+            if self.spawm_time == 0:
+                self.spawm_astronaut()
+                self.spawm_time = self.spawn_difficulty
+
+            self.ship.update()
+
+            for astronaut in self.astronauts:
+                astronaut.update()
+                self.check_astronaut_colision(astronaut)
+                self.check_oxygen_level(astronaut)
+
+            self.check_energy_colision()
+
+            if self.lives == 0 or self.fuel.val == 0:
+                self.game_over()
+
+            self.lb_score.text = f'{self.score:05d}'
+            self.lb_lives.text = f'{self.lives}'
+            self.lb_best.text = f'{self.best:05d}'
 
 
 @bind(doc, 'keydown')
