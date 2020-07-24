@@ -210,7 +210,6 @@ class Game:
             svg.text('BEST :', x=700, y=10, fill='white'),
             self.lb_best]
 
-
     def start(self):
         self.ship = Ship()
         self.energy = Energy()
@@ -232,7 +231,6 @@ class Game:
         self.area <= [astro.bar for astro in self.astronauts]
         self.area <= self.ship.img
 
-
     def key_handler(self):
         if self.state == PLAY:
             if self.key['up'] is True:
@@ -250,13 +248,10 @@ class Game:
         if self.state in [SPLASH, GAME_OVER] and self.key['space'] is True:
             self.start()
 
-
     def spawm_astronaut(self):
         new_astro = Astronaut(uid=milliseconds())
         self.astronauts.append(new_astro)
         self.area <= [new_astro.img, new_astro.bar]
-
-
 
     def kill_astronaut(self, astronaut):
         del doc[astronaut.uid]
@@ -291,7 +286,6 @@ class Game:
             del doc[astronaut.uid]
             del doc[astronaut.uid + 10000]
         self.state = GAME_OVER
-
         self.splash[1].text = 'GAME OVER'
         self.splash[1].attrs['x'] = 255
         self.splash[1].attrs['y'] = 260
