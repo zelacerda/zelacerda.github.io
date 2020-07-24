@@ -1,0 +1,26 @@
+<!doctype html><html><head><title>Editor Markdown</title><meta charset="utf-8">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython/brython.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython/brython_stdlib.js"></script>
+<link rel="stylesheet" type="text/css" href="editor.css"></head><body onload="brython()">
+<script type="text/python">
+from browser import document as doc
+from browser import html, timer
+from browser.markdown import mark
+
+from editor import default  # Texto padrão para exibição no editor
+
+doc <= html.DIV(Class='area', id='left')
+doc['left'] <= html.DIV('Editor markdown', Class='titulo')
+doc['left'] <= html.TEXTAREA(default, id='editor')
+
+doc <= html.DIV(Class='area', id='right')
+doc['right'] <= html.DIV('Texto formatado', Class='titulo')
+doc['right'] <= html.DIV(id='render')
+
+def refresh():
+    md, _ = mark(doc['editor'].value)  # Converte o markdown da esquerda em HTML
+    doc['render'].html = md            # Atualiza a área da direita com o HTML
+
+timer.set_interval(refresh, 500) # Aciona o timer para atualizar a cada 500ms
+
+</script></body></html>
