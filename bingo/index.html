@@ -1,18 +1,21 @@
 <!doctype html>
-
 <html>
-<head>
-    <title>Gerador de cartelas de bingo</title>
-    <meta charset="utf-8">
-    <script type="text/javascript" src="brython.js"></script>
-    <script type="text/javascript" src="brython_stdlib.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body onload="brython()">
-<h1>BINGO!</h1>
-Clique <button id="botao">aqui</button> para gerar uma nova cartela de bingo.
-<div id="ticket"></div>
-<span id="codigo" style="display:none">Código da cartela: <span id="ticket_no" style="font-weight: bold;"></span></span>
+    <head>
+        <title>Gerador de cartelas de bingo</title>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="../brython.js"></script>
+        <script type="text/javascript" src="../brython_stdlib.js"></script>
+        <link rel="stylesheet" type="text/css" href="bingo.css">
+    </head>
+    <body onload="brython()">
+        <h1>BINGO!</h1>
+        Clique <button id="botao">aqui</button> para gerar uma nova cartela de bingo.
+        <div id="ticket"></div>
+        <span id="codigo" style="display:none">
+            Código da cartela: <span id="ticket_no" style="font-weight: bold;"></span>
+        </span>
+    </body>
+</html>
 
 <script type="text/python">
 """
@@ -29,7 +32,6 @@ from browser.html import TABLE, TR, TD
 def generate_ticket(ticket_number=None):
     """
     Gera uma nova cartela de bingo a partir da semente ticket_number.
-
     Retorna os números em uma lista com três listas de números (uma por linha).
     """
     if ticket_number is None:
@@ -64,7 +66,8 @@ def generate_ticket(ticket_number=None):
 
 def to_string(ticket):
     """
-    Converte números da cartela em matriz 3x9 de strings para montar a tabela.
+    Converte números da cartela em matriz 3x9 de strings
+    para montar a tabela.
     """
     grid = [['' for j in range(9)] for i in range(3)]
     for line, numbers in enumerate(ticket):
@@ -78,9 +81,7 @@ def to_string(ticket):
 
 
 def cria_tabela(lista):
-    """
-    Retorna o HTML de uma tabela com a cartela pronta.
-    """
+    """Retorna o HTML de uma tabela com a cartela pronta."""
     tab = TABLE()
     for row in range(3):
         tab <= TR(TD(f"{lista[row][col]}", Class="inactive") for col in range(9))
@@ -88,9 +89,7 @@ def cria_tabela(lista):
 
 
 def cria_cartela(ticket_number):
-    """
-    Gera a cartela de número ticker_number
-    """
+    """Gera a cartela de número ticker_number."""
     num, ticket = generate_ticket(ticket_number)
     numeros = to_string(ticket)
     document["ticket_no"].textContent = str(num)
@@ -101,18 +100,14 @@ def cria_cartela(ticket_number):
 
 @bind(document["botao"], "click")
 def clica(event):
-    """
-    Handler para gerar uma cartela aleatória ao clicar no botão.
-    """
+    """Handler para gerar uma cartela aleatória ao clicar no botão."""
     ticket_number = random.randint(1, 9999)
     window.location.search = f"?{ticket_number}"
 
 
 @bind("div", "click")
 def muda_cor(event):
-    """
-    Handler  para alternar a cor de uma célula com números clicada.
-    """
+    """Handler  para alternar a cor de uma célula com números clicada."""
     element = event.target
     content = element.textContent
     if content != "":
@@ -123,9 +118,7 @@ def muda_cor(event):
 
 
 def inicio():
-    """
-    Inicia a aplicação.
-    """
+    """Inicia a aplicação."""
     search = window.location.search[1:]  # Número da cartela
 
     try:
@@ -137,7 +130,5 @@ def inicio():
         document["ticket"] <= tabela
 
 inicio()
-</script>
 
-</body>
-</html>
+</script>
