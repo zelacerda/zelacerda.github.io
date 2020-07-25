@@ -1,17 +1,29 @@
-# Gerador de cartelas de Bingo
+# Experiências com Brython
 
-*Versão 1.0*
+Esta página reúne três aplicações feitas em [Brython](https://brython.info), impelementação de Python para rodar em navegadores (client-side).
 
-*2020 - by zelacerda*
+As aplicações rodam todas no frontend, com o script em Python dentro do arquivo HTML. Ou seja, para executar localmente basta clonar este repositório e abrir os arquivos index.html no seu navegador.
 
-Esta é uma pequena aplicação feita em [Brython](https://brython.info) que gera uma cartela de bingo na versão britânica (15 números em uma grade 3x9 para 90 bolas).
+## [Bingo](http://zelacerda.github.io/bingo)
+
+Página que gera uma cartela de bingo na versão britânica (15 números em uma grade 3x9 para 90 bolas).
 
 Depois de gerada a cartela você pode marcar os números clicando nas células correspondentes.
 
-A aplicação roda toda no frontend, com o script em Python dentro do arquivo HTML. Ou seja, para executar localmente basta clonar este repositório e abrir o arquivo index.html no seu navegador.
-
-[Acesse aqui a aplicação remotamente](http://zelacerda.github.io/).
-
 Você também pode compartilhar o link acima com os amigos e fazer um bingo virtual usando videochamada.
 
-Divirta-se!
+## [Markdown Editor](http://zelacerda.github.io/markdown)
+
+Editor markdown simples utilizando o poderoso módulo **markdown** do Brython.
+
+O markdown que você escreve na área de texto à esquerda é formatado para HTML na área à direita.
+
+## [Space Rescue](http://zelacerda.github.io/space)
+
+Jogo inspirado no clássico Asteroids. Você controla uma nave com as teclas **esquerda** e **direita** e acelera com a tecla **cima**.
+
+O objetivo é acumular pontos resgatando o máximo de astronautas antes que o oxigênio deles se esgote. Também é necessário coletar células de combustível para continnuar utilizando os foguetes.
+
+Lembre-se: no espaço não há fricção, e a inércia pode dificultar bastante a sua tarefa.
+
+*2020 - by zelacerda*
