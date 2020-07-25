@@ -63,7 +63,6 @@ def generate_ticket(ticket_number=None):
 
     return f'{ticket_number:04d}', ticket
 
-
 def to_string(ticket):
     """
     Converte números da cartela em matriz 3x9 de strings
@@ -79,14 +78,12 @@ def to_string(ticket):
             grid[line][column] = str(number)
     return grid
 
-
 def cria_tabela(lista):
     """Retorna o HTML de uma tabela com a cartela pronta."""
     tab = TABLE()
     for row in range(3):
         tab <= TR(TD(f"{lista[row][col]}", Class="inactive") for col in range(9))
     return tab
-
 
 def cria_cartela(ticket_number):
     """Gera a cartela de número ticker_number."""
@@ -97,13 +94,11 @@ def cria_cartela(ticket_number):
     document["ticket"] <= cria_tabela(numeros)
     document["codigo"].style.display = "inline"
 
-
 @bind(document["botao"], "click")
 def clica(event):
     """Handler para gerar uma cartela aleatória ao clicar no botão."""
     ticket_number = random.randint(1, 9999)
     window.location.search = f"?{ticket_number}"
-
 
 @bind("div", "click")
 def muda_cor(event):
@@ -115,7 +110,6 @@ def muda_cor(event):
             element.class_name = "inactive"
         elif element.class_name == "inactive":
             element.class_name = "active"
-
 
 def inicio():
     """Inicia a aplicação."""
@@ -130,5 +124,4 @@ def inicio():
         document["ticket"] <= tabela
 
 inicio()
-
 </script>
