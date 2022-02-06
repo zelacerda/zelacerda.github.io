@@ -1,0 +1,44 @@
+<html><head><title>Paro.le</title><meta charset="utf-8">
+<script type="text/javascript" src="../brython.js"></script>
+<script type="text/javascript" src="../brython_stdlib.js"></script>
+<link rel="stylesheet" type="text/css" href="parole.css"></head>
+<body onload="brython()"></body></html>
+<script type="text/python">
+
+import time
+from random import seed
+
+from browser import document as doc
+from browser import window, bind
+from browser.html import TABLE, TR, TD, DIV
+
+from utils import get_letters
+
+def get_day_game():
+    init_time = 1644116400 # 2022-02-06 00:00
+    now = int(time.time())
+    day_game = int((now - init_time) / 86400) + 1
+    return day_game
+
+def roll_dices(game):
+    seed(game)
+    letters = [get_letters(4) for _ in range(4)]
+    return letters
+
+def create_grid(letters):
+    grid = DIV(id="grid")
+    tab = TABLE()
+    for row in range(4):
+        tab <= TR(TD(letters[row][col]) for col in range(4))
+    grid <= tab
+    return grid
+
+def main():
+    game = get_day_game()
+    letters = roll_dices(game)
+    grid = create_grid(letters)
+    doc <= grid
+
+main()
+
+</script>
