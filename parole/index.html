@@ -1,4 +1,5 @@
 <html><head><title>Paro.le</title><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0, viewport-fit=cover">
 <script type="text/javascript" src="../brython.js"></script>
 <script type="text/javascript" src="../brython_stdlib.js"></script>
 <link rel="stylesheet" type="text/css" href="parole.css"></head>
@@ -9,10 +10,11 @@ import time
 from random import seed
 
 from browser import document as doc
-from browser import window, bind
-from browser.html import TABLE, TR, TD, DIV
+from browser import window, bind, timer
+from browser.html import TABLE, TR, TD, DIV, SPAN, HR
 
-from utils import get_letters
+from utils import get_letters, count2sec
+
 
 def get_day_game():
     init_time = 1644116400 # 2022-02-06 00:00
@@ -44,28 +46,37 @@ def muda_cor(event):
         elif element.class_name == "inactive":
             element.class_name = "active"
 
+def update_timer():
+    global count
+    count -= 1
+    if count > 0:
+        doc["timer"].textContent = count2sec(count)
+    else:
+        doc["timer"].textContent = "Fim de jogo!"
+        reset()
 
-@bind("body", "touchmove")
-def checa_pos(event):
-    event.preventDefault()
-    x = event.changedTouches[0].pageX
-    y = event.changedTouches[0].pageY
-    scroll_top = doc.scrollingElement.scrollTop
-    element = doc.elementFromPoint(x, y - scroll_top)
-    content = element.textContent
-    if content != "":
-        if element.class_name == "active":
-            element.class_name = "inactive"
-        elif element.class_name == "inactive":
-            element.class_name = "active"
+
+def reset():
+    for row in range(4):
+        for col in range(4):
+            doc[f"{row}{col}"].textContent = ""
+            doc[f"{row}{col}"].class_name = "inactive"
 
 
 def main():
     game = get_day_game()
     letters = roll_dices(game)
     grid = create_grid(letters)
+    doc <= SPAN("paro.le", id="title", Class="title")
+    doc <= HR()
     doc <= grid
+    doc <= SPAN("3:00", id="timer", Class="timer")
+
+
+count = 180
 
 main()
+
+timer.set_interval(update_timer, 1000)
 
 </script>

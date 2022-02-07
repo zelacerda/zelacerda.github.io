@@ -16,15 +16,14 @@ freq = {'a': 0.1462, 'b': 0.0104, 'c': 0.0388, 'd': 0.0499,
 def roll_dice(dice):
     return dice[randint(0, 5)]
 
-def roll_dices():
+def roll_dices(): # Not implemented in web game version
     board = []
     for dice in dices:
         board.append(roll_dice(dice))
     shuffle(board)
     return board[0:4], board[4:8], board[8:12], board[12:16]
 
-def get_letter():
-    '''Deprecated: use roll_dice instead.'''
+def get_letter(): # Not implemented in web game version
     value = random()
     acc = 0
     for l, v in freq.items():
@@ -33,9 +32,12 @@ def get_letter():
             return l.upper()
 
 def get_letters(n):
-    '''Deprecated: use roll_dices instead.'''
     result = []
     for _ in range(n):
         result.append(get_letter())
     return result
 
+def count2sec(count):
+    min = int(count / 60)
+    sec = count % 60
+    return f"{min}:{sec:02d}"
