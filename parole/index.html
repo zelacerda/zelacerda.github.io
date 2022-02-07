@@ -26,12 +26,39 @@ def roll_dices(game):
     return letters
 
 def create_grid(letters):
-    grid = DIV(id="grid")
-    tab = TABLE()
+    grid = TABLE()
     for row in range(4):
-        tab <= TR(TD(letters[row][col]) for col in range(4))
-    grid <= tab
+        grid <= TR(TD(DIV(letters[row][col], id=str(row)+str(col), Class="inactive")) for col in range(4))
     return grid
+
+@bind("body", "click")
+def muda_cor(event):
+    """
+    Handler  para alternar a cor de uma célula com números clicada.
+    """
+    element = event.target
+    content = element.textContent
+    if content != "":
+        if element.class_name == "active":
+            element.class_name = "inactive"
+        elif element.class_name == "inactive":
+            element.class_name = "active"
+
+
+@bind("body", "touchmove")
+def checa_pos(event):
+    event.preventDefault()
+    x = event.changedTouches[0].pageX
+    y = event.changedTouches[0].pageY
+    scroll_top = doc.scrollingElement.scrollTop
+    element = doc.elementFromPoint(x, y - scroll_top)
+    content = element.textContent
+    if content != "":
+        if element.class_name == "active":
+            element.class_name = "inactive"
+        elif element.class_name == "inactive":
+            element.class_name = "active"
+
 
 def main():
     game = get_day_game()

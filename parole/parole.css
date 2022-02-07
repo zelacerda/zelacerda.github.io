@@ -1,44 +1,47 @@
 body{
     font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 10px;
     text-align: center;
-    height: 100%;
+    height: 90%;
+    width: 100%;
     margin: 0px;
     padding: 0px;
     background-color: #333;
 }
 
 table{
-    font-size: 80px;
-    font-weight: bolder;
     margin-top: 15px;
     margin-bottom: 15px;
     margin-left: auto;
     margin-right: auto;
-    border-spacing: 20px;
     width: 700px;
     height: 700px;
+    align-content: center;
 }
 
 td{
     padding: 10px 10px 10px 10px;
-    text-align: center;
     cursor: pointer;
-    width: 7vw;
-    height: 7vw;
-    background-color: #e7e7e7;
-	box-shadow: inset 0 5px white, inset 0 -5px #bbb, inset 5px 0 #d7d7d7, inset -5px 0 #d7d7d7;
-	border-radius: 15%;
+    width: 25%;
+    height: 25%;
+    font-size: 100px;
+    font-weight: bolder;
 }
 
 div{
     user-select: none;
+    text-align: center;
+    line-height: 150%;
+    width: 100%;
+    height: 100%;
+    border-radius: 15%;
 }
 
 .active{
-    background-color: #79f;
+    background-color: #9c9;
+    box-shadow: inset 0 5px #cfc, inset 0 -5px #696, inset 5px 0 #cfc, inset -5px 0 #696;
 }
 
 .inactive{
     background-color: #ccc;
+    box-shadow: inset 0 5px #fff, inset 0 -5px #999, inset 5px 0 #fff, inset -5px 0 #999;
 }
