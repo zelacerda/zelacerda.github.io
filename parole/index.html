@@ -1,17 +1,18 @@
 <html><head><title>Paro.le</title><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0, viewport-fit=cover">
-<script type="text/javascript" src="../brython.js"></script>
-<script type="text/javascript" src="../brython_stdlib.js"></script>
+<script type="text/javascript" src="brython.js"></script>
+<script type="text/javascript" src="brython_stdlib.js"></script>
 <link rel="stylesheet" type="text/css" href="parole.css"></head>
 <body onload="brython()"></body></html>
 <script type="text/python">
 
 import time
+import json
 from random import seed
 
 from browser import document as doc
-from browser import window, bind, timer
-from browser.html import TABLE, TR, TD, DIV, SPAN, HR
+from browser import window, bind, timer, ajax
+from browser.html import TABLE, TR, TD, DIV, SPAN, HR, BUTTON
 
 from utils import get_letters, count2sec
 
@@ -30,21 +31,70 @@ def roll_dices(game):
 def create_grid(letters):
     grid = TABLE()
     for row in range(4):
-        grid <= TR(TD(DIV(letters[row][col], id=str(row)+str(col), Class="inactive")) for col in range(4))
+        grid <= TR(TD(DIV(
+	    letters[row][col],
+	    id=f"dice-{row}-{col}",
+	    Class="inactive")) for col in range(4))
     return grid
 
+
+def read(req):
+    response = json.loads(req.responseText)
+    word = response['result']
+    print(word)
+
+
+def envia(word):
+    global pontos
+    print(f"Vou enviar a palavra {word}")
+    l = len(word)
+    if l < 5:
+        p = 1
+    elif l == 5:
+        p = 2
+    elif l == 6:
+        p = 3
+    elif l == 7:
+        p = 5
+    else:
+        p = 8
+    doc["area"].textContent += f"{word}-{p} "
+    pontos += p
+    doc["pontos"].textContent = str(pontos)
+    cancela()
+    # ajax.get(f"https://app-pkmnt5mjza-rj.a.run.app/{word}", oncomplete=read)
+
+
+def cancela():
+    doc["word"].textContent = ""
+    for row in range(4):
+        for col in range(4):
+            doc[f"dice-{row}-{col}"].class_name = "inactive"
+
+
 @bind("body", "click")
-def muda_cor(event):
+def click(event):
     """
-    Handler  para alternar a cor de uma célula com números clicada.
+    Handler para eventos de clique.
     """
     element = event.target
+
+    if element.id == "envia":
+        envia(doc["word"].textContent)
+    elif element.id == "cancela":
+        cancela()
+    elif element.id[:4] == "dice":
+        _, row, col = element.id.split("-")
+        print(f"Clicou na linha {row} e coluna {col}")
+        check_letter(element)
+
+
+def check_letter(element):
     content = element.textContent
-    if content != "":
-        if element.class_name == "active":
-            element.class_name = "inactive"
-        elif element.class_name == "inactive":
-            element.class_name = "active"
+    if content != "" and element.class_name == "inactive":
+        doc["word"].textContent += element.textContent
+        element.class_name = "active"
+
 
 def update_timer():
     global count
@@ -59,8 +109,8 @@ def update_timer():
 def reset():
     for row in range(4):
         for col in range(4):
-            doc[f"{row}{col}"].textContent = ""
-            doc[f"{row}{col}"].class_name = "inactive"
+            doc[f"dice-{row}-{col}"].textContent = ""
+            doc[f"dice-{row}-{col}"].class_name = "inactive"
 
 
 def main():
@@ -69,11 +119,17 @@ def main():
     grid = create_grid(letters)
     doc <= SPAN("paro.le", id="title", Class="title")
     doc <= HR()
+    doc <= DIV("3:00", id="timer", Class="timer")
+    doc <= DIV(str(pontos), id="pontos", Class="pontos")
     doc <= grid
-    doc <= SPAN("3:00", id="timer", Class="timer")
+    doc <= DIV("", id="area", Class="area")
+    doc <= DIV("", id="cancela", Class="cancela")
+    doc <= DIV("", id="word", Class="word")
+    doc <= DIV("", id="envia", Class="envia")
 
 
 count = 180
+pontos = 0
 
 main()
 
