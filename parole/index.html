@@ -116,13 +116,14 @@ def reset():
 def main():
     game = get_day_game()
     letters = roll_dices(game)
+    letters = ["FELI", "ZANI", "VERS", "ARIO"]
     grid = create_grid(letters)
     doc <= SPAN("paro.le", id="title", Class="title")
     doc <= HR()
     doc <= DIV("3:00", id="timer", Class="timer")
     doc <= DIV(str(pontos), id="pontos", Class="pontos")
     doc <= grid
-    doc <= DIV("", id="area", Class="area")
+    doc <= DIV("VIVA&nbspA&nbspMAMMA!-79 ", id="area", Class="area")
     doc <= DIV("", id="cancela", Class="cancela")
     doc <= DIV("", id="word", Class="word")
     doc <= DIV("", id="envia", Class="envia")
