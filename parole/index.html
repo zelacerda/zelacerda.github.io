@@ -3,7 +3,12 @@
 <script type="text/javascript" src="../brython.js"></script>
 <script type="text/javascript" src="../brython_stdlib.js"></script>
 <link rel="stylesheet" type="text/css" href="parole.css"></head>
-<body onload="brython()"></body></html>
+<body onload="brython()"></body>
+<script type="text/javascript">
+js = {share: function(str){return alert(str)}}</script>
+</html>
+
+
 <script type="text/python">
 
 import time
@@ -44,32 +49,46 @@ def read(req):
     print(word)
 
 
-def envia(word):
+def checa(req):
     global pontos
-    print(f"Vou enviar a palavra {word}")
+    response = json.loads(req.responseText)
+    word = response['result']
+    print(response)
+    print(f"Recebi a palavra {word}")
+
+    if word:
+        l = len(word)
+        if l < 5:
+            p = 1
+        elif l == 5:
+            p = 2
+        elif l == 6:
+            p = 3
+        elif l == 7:
+            p = 5
+        else:
+            p = 8
+        doc["area"].textContent += f"{word}-{p} "
+        pontos += p
+        doc["pontos"].textContent = f"PONTOS: {pontos}"
+
+
+def envia(word):
+    global guesses
     l = len(word)
-    if l < 5:
-        p = 1
-    elif l == 5:
-        p = 2
-    elif l == 6:
-        p = 3
-    elif l == 7:
-        p = 5
-    else:
-        p = 8
-    doc["area"].textContent += f"{word}-{p} "
-    pontos += p
-    doc["pontos"].textContent = str(pontos)
+    if l > 2 and word not in guesses:
+        guesses.append(word)
+        ajax.get(f"https://app-pkmnt5mjza-rj.a.run.app/{word.lower()}", oncomplete=checa)
     cancela()
-    # ajax.get(f"https://app-pkmnt5mjza-rj.a.run.app/{word}", oncomplete=read)
 
 
 def cancela():
+    global pos_x, pos_y
     doc["word"].textContent = ""
     for row in range(4):
         for col in range(4):
             doc[f"dice-{row}-{col}"].class_name = "inactive"
+    pos_x, pos_y = None, None
 
 
 @bind("body", "click")
@@ -84,16 +103,26 @@ def click(event):
     elif element.id == "cancela":
         cancela()
     elif element.id[:4] == "dice":
-        _, row, col = element.id.split("-")
-        print(f"Clicou na linha {row} e coluna {col}")
         check_letter(element)
 
 
+def adjacent(x1, y1, x2, y2):
+    dist = max(abs(x2-x1), abs(y2-y1))
+    return dist == 1
+
+
 def check_letter(element):
+    global pos_x, pos_y
+    _, row, col = element.id.split("-")
+    if pos_x is not None:
+        adj = adjacent(pos_x, pos_y, int(col), int(row))
+    else:
+        adj = False
     content = element.textContent
-    if content != "" and element.class_name == "inactive":
+    if (content != "" and adj and element.class_name == "inactive") or (pos_x is None):
         doc["word"].textContent += element.textContent
         element.class_name = "active"
+        pos_x, pos_y = int(col), int(row)
 
 
 def update_timer():
@@ -102,35 +131,38 @@ def update_timer():
     if count > 0:
         doc["timer"].textContent = count2sec(count)
     else:
-        doc["timer"].textContent = "Fim de jogo!"
+        doc["timer"].textContent = "Acabou!"
         reset()
 
 
 def reset():
+    global pos_x, pos_y
+    pos_x, pos_y = 0, 0
     for row in range(4):
         for col in range(4):
-            doc[f"dice-{row}-{col}"].textContent = ""
-            doc[f"dice-{row}-{col}"].class_name = "inactive"
+            doc[f"dice-{row}-{col}"].class_name = "active"
 
 
 def main():
     game = get_day_game()
     letters = roll_dices(game)
-    letters = ["FELI", "ZANI", "VERS", "ARIO"]
     grid = create_grid(letters)
     doc <= SPAN("paro.le", id="title", Class="title")
     doc <= HR()
+    doc <= DIV(f"PONTOS: {pontos}", id="pontos", Class="pontos")
     doc <= DIV("3:00", id="timer", Class="timer")
-    doc <= DIV(str(pontos), id="pontos", Class="pontos")
     doc <= grid
-    doc <= DIV("VIVA&nbspA&nbspMAMMA!-79 ", id="area", Class="area")
-    doc <= DIV("", id="cancela", Class="cancela")
-    doc <= DIV("", id="word", Class="word")
-    doc <= DIV("", id="envia", Class="envia")
-
+    cont1 = DIV(Class="container")
+    cont1 <= DIV("", id="word", Class="word")
+    cont1 <= DIV("✘", id="cancela", Class="cancela")
+    cont1 <= DIV("✔", id="envia", Class="envia")
+    doc <= cont1
+    doc <= DIV("", id="area", Class="area")
 
 count = 180
 pontos = 0
+pos_x, pos_y = None, None
+guesses = []
 
 main()
 

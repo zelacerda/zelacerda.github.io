@@ -9,7 +9,7 @@ body{
 
 hr{
     border-color: #999;
-    width: 360px;
+    width: 350px;
 }
 
 table{
@@ -37,28 +37,36 @@ div{
     text-align: center;
 }
 
+.container{
+    width: 350px;
+    margin: auto;
+    margin-bottom: 10px;
+}
+
 .envia{
-    width: 60px;
-    height: 60px;
+    padding: 5px;
+    width: 50px;
     display: inline-block;
     margin: auto;
     font-size: 30px;
     line-height: 50px;
     background-color: #6c6;
-    color: #66cc66;
+    overflow: hidden;
+    color: #ffffff;
     border-radius: 15%;
     font-weight: 950;
 }
 
 .cancela{
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    padding: 5px;
     display: inline-block;
     margin-right: 10px;
     font-size: 30px;
     line-height: 50px;
     background-color: #c66;
-    color: #cc6666;
+    overflow: hidden;
+    color: #ffffff;
     border-radius: 15%;
     font-weight: 950;
 }
@@ -69,12 +77,11 @@ div{
     padding: 5px;
     margin-right: 10px;
     display: inline-block;
-    text-align: right;
     font-weight: 800;
     font-size: 30px;
     line-height: 50px;
     overflow: hidden;
-    text-overflow: clip;
+    text-align: right;
     direction: rtl;
     color: #cc6;
     background-color: #555;
@@ -120,21 +127,21 @@ div{
 }
 
 .timer{
-    text-align: left;
+    text-align: right;
     width: 170px;
     display: inline-block;
     margin: auto;
-    font-size: 40px;
+    font-size: 25px;
     font-weight: 900;
     color: #cc6;
 }
 
 .pontos{
-    text-align: right;
+    text-align: left;
     width: 170px;
     display: inline-block;
     margin: auto;
-    font-size: 40px;
+    font-size: 25px;
     font-weight: 900;
     color: #cc6;
 }
