@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0, viewport-fit=cover">
 <script type="text/javascript" src="brython.js"></script>
 <script type="text/javascript" src="brython_stdlib.js"></script>
-<link rel="stylesheet" type="text/css" href="parole.css"></head>
+<link rel="stylesheet" type="text/css" href="tortooo.css"></head>
 <body onload="brython()"></body>
 <script type="text/javascript">
 js = {share: function(str){return alert(str)}}</script>
@@ -53,8 +53,6 @@ def checa(req):
     global pontos
     response = json.loads(req.responseText)
     word = response['result']
-    print(response)
-    print(f"Recebi a palavra {word}")
 
     if word:
         l = len(word)
@@ -119,7 +117,7 @@ def check_letter(element):
     else:
         adj = False
     content = element.textContent
-    if (content != "" and adj and element.class_name == "inactive") or (pos_x is None):
+    if (adj and element.class_name == "inactive") or (pos_x is None):
         doc["word"].textContent += element.textContent
         element.class_name = "active"
         pos_x, pos_y = int(col), int(row)
@@ -138,9 +136,10 @@ def update_timer():
 def reset():
     global pos_x, pos_y
     pos_x, pos_y = 0, 0
+    doc["word"].textContent = ""
     for row in range(4):
         for col in range(4):
-            doc[f"dice-{row}-{col}"].class_name = "active"
+            doc[f"dice-{row}-{col}"].class_name = "end"
 
 
 def main():
@@ -150,7 +149,7 @@ def main():
     doc <= SPAN("tort.ooo", id="title", Class="title")
     doc <= HR()
     doc <= DIV(f"PONTOS: {pontos}", id="pontos", Class="pontos")
-    doc <= DIV("3:00", id="timer", Class="timer")
+    doc <= DIV("5:00", id="timer", Class="timer")
     doc <= grid
     cont1 = DIV(Class="container")
     cont1 <= DIV("", id="word", Class="word")
@@ -159,7 +158,7 @@ def main():
     doc <= cont1
     doc <= DIV("", id="area", Class="area")
 
-count = 180
+count = 300
 pontos = 0
 pos_x, pos_y = None, None
 guesses = []
