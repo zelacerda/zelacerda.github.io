@@ -6,12 +6,14 @@ from browser import bind, timer, ajax
 from browser.local_storage import storage
 
 from dom import Page, Div
+import modal
 from utils import get_day_game, get_letters, count2sec, is_adjacent
 
 
 class State(Enum):
     PLAY = 0
-    GAME_OVER = 1
+    MODAL = 1
+    GAME_OVER = 2
 
 
 class Game:
@@ -70,12 +72,15 @@ class Game:
         # Found words area
         self.area = Div(id="word-area")
 
+        # Modal box
+        self.modal = Div(id="modal", Class="hidden")
+
         # Putting all containers together and render page
         all = Div(id="all-container")
-        for c in [header, tp_line, grid, guess_line, self.area]:
+        for c in [header, tp_line, grid, guess_line, self.area, self.modal]:
             all.append(c)
-        self.page.append(all)
 
+        self.page.append(all)
 
     def click_handler(self, event):
         id = event.target.id
@@ -84,17 +89,30 @@ class Game:
             div_id = int(id[7:])
             self.check_letter(div_id)
 
-        if id == "cancel" and self.state == State.PLAY:
+        elif id == "cancel" and self.state == State.PLAY:
             self.clear_guess("inactive")
 
-        if id == "send" and self.state == State.PLAY:
+        elif id == "send" and self.state == State.PLAY:
             self.send_word()
 
-        if id == "about":
+        elif id == "about" and self.modal.class_name == "hidden":
+            self.modal.innerHTML = modal.about()
+            self.modal.class_name = "visible"
+            self.state = State.MODAL
             g = storage.get('game')
             print(g)
             g = str(int(g) + 1)
             storage['game'] = g
+
+        elif id == "setup" and self.modal.class_name == "hidden":
+            self.modal.innerHTML = modal.stats()
+            self.modal.class_name = "visible"
+            self.state = State.MODAL
+
+        elif self.modal.class_name == "visible":
+            self.modal.class_name = "hidden"
+            self.state = State.PLAY
+
 
 
 
