@@ -3,10 +3,10 @@ from enum import Enum
 
 #from browser import window
 from browser import bind, timer, ajax
-from browser.local_storage import storage
 
 from dom import Page, Div
 import modal
+import storage
 from utils import get_day_game, get_letters, count2sec, is_adjacent
 
 
@@ -19,36 +19,37 @@ class State(Enum):
 class Game:
     def __init__(self):
         self.game = get_day_game()
-        storage['game'] = str(self.game)
         self.letters = get_letters(16, random_seed=self.game)
         self.act_letters = [False for _ in range(16)]
-        self.last_pos = None
         self.state = State.PLAY
+        self.played = False
         self.countdown = 180
-        self.points = 0
+        self.score = 0
         self.guesses = []
+        self.last_pos = None
         self.page = Page()
+
         self.render_page()
+        storage.set_value("countdown", self.countdown)
+
 
     def render_page(self):
 
         # Header container
         about = Div("?", id="about", Class="top-button")
         title = Div("tort.ooo", id="title")
-        stats = Div("✲", id="setup", Class="top-button")
-        separator = Div()
-        setup = Div("»", id="share", Class="top-button")
+        stats = Div("%", id="stats", Class="top-button")
 
         header = Div(id="header-container")
-        for d in [about, title, stats, separator, setup]:
+        for d in [about, title, stats]:
             header.append(d)
 
         # Timer and points line container
-        self.points_label = Div(f"PONTOS: {self.points}", id="points")
+        self.score_label = Div(f"PONTOS: {self.score}", id="score")
         self.timer = Div(f"{count2sec(self.countdown)}", id="timer")
 
         tp_line = Div(id="timer-points-container")
-        tp_line.append(self.points_label)
+        tp_line.append(self.score_label)
         tp_line.append(self.timer)
 
         # Grid container
@@ -74,6 +75,9 @@ class Game:
 
         # Modal box
         self.modal = Div(id="modal", Class="hidden")
+        self.modal_content = Div()
+        self.modal.append(Div("X", id="modal-close"))
+        self.modal.append(self.modal_content)
 
         # Putting all containers together and render page
         all = Div(id="all-container")
@@ -96,24 +100,21 @@ class Game:
             self.send_word()
 
         elif id == "about" and self.modal.class_name == "hidden":
-            self.modal.innerHTML = modal.about()
-            self.modal.class_name = "visible"
-            self.state = State.MODAL
-            g = storage.get('game')
-            print(g)
-            g = str(int(g) + 1)
-            storage['game'] = g
-
-        elif id == "setup" and self.modal.class_name == "hidden":
-            self.modal.innerHTML = modal.stats()
+            self.modal_content.innerHTML = modal.show_about()
             self.modal.class_name = "visible"
             self.state = State.MODAL
 
-        elif self.modal.class_name == "visible":
+        elif id == "stats" and self.modal.class_name == "hidden":
+            self.modal_content.innerHTML = modal.show_stats()
+            self.modal.class_name = "visible"
+            self.state = State.MODAL
+
+        elif id == "modal-close":
             self.modal.class_name = "hidden"
-            self.state = State.PLAY
-
-
+            if self.played:
+                self.state = State.GAME_OVER
+            else:
+                self.state = State.PLAY
 
 
     def send_word(self):
@@ -145,11 +146,14 @@ class Game:
     def update(self):
         if self.state == State.PLAY:
             self.countdown -= 1
+            storage.set_value("countdown", self.countdown)
             self.timer.textContent = count2sec(self.countdown)
 
         if self.countdown == 0 and self.state == State.PLAY:
             self.clear_guess("game-over")
-            self.timer.textContent = "ACABOU!"
+            self.modal_content.innerHTML = modal.show_game_over()
+            self.modal.class_name = "visible"
+            self.played = True
             self.state = State.GAME_OVER
 
 
@@ -167,9 +171,9 @@ class Game:
             else:
                 p = 8
 
-            self.points += p
+            self.score += p
             self.area.textContent += f"{word}-{p} "
-            self.points_label.textContent = f"PONTOS: {self.points}"
+            self.score_label.textContent = f"PONTOS: {self.score}"
 
 
 @bind("body", "click")

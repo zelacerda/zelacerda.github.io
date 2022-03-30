@@ -54,7 +54,7 @@ body{
 
 #header-container{
     display: grid;
-    grid-template-columns: 45px auto 45px 5px 45px;
+    grid-template-columns: 45px auto 45px;
 }
 
 #timer-points-container{
@@ -71,7 +71,7 @@ body{
     font-size: 35px;
 }
 
-#points{
+#score{
     text-align: left;
 }
 
@@ -148,12 +148,24 @@ body{
     margin: 20px;
     top: 90px;
     height: 375px;
-    font-size: 18px;
+    font-size: 17px;
     background-color: #222;
-    color: #999;
+    color: #ccc;
     padding: 10px;
     border-radius: 8px;
   }
+
+#modal-close {
+    width: 20px;
+    text-align: center;
+    padding: 5px 3px 3px 3px;
+    font-size: 16px;
+    font-weight: 950;
+    border-style: solid;
+    border-color: #555;
+    border-width: 2px;
+    border-radius: 15%;
+}
 
 .hidden {
     visibility: hidden;
@@ -174,7 +186,7 @@ body{
 }
 
 h2 {
-    font-size: 32px;
+    font-size: 28px;
     color: #cc6;
 }
 
