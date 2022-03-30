@@ -46,7 +46,7 @@ def show_game_over():
     if score > record:
         title = "NOVO RECORDE!"
 
-    js = 'javascript:window.alert(navigator.share({"title":"titulo", "text":"texto", "url":"url"}))'
+    js = "javascript:window.alert(navigator.share({title: 'titulo', text: 'texto', url: 'https://tort.ooo'}))"
 
     html = f"""
     <h2><center>{title}</center></h2>
