@@ -1,8 +1,14 @@
 # Experiências com Brython
 
-Esta página reúne três aplicações feitas em [Brython](https://brython.info), impelementação de Python para rodar em navegadores (client-side).
+Esta página reúne quatro experimentos de aplicações feitas em [Brython](https://brython.info), impelementação de Python para rodar em navegadores (client-side).
 
-As aplicações rodam todas no frontend, com o script em Python dentro do arquivo HTML. Ou seja, para executar localmente basta clonar este repositório e abrir os arquivos index.html no seu navegador.
+As aplicações rodam todas no frontend, com o script principal dentro do arquivo HTML ou na forma de módulos Python.
+
+## [tort.ooo](https://tort.ooo)
+
+Jogo de dados e palavras baseado no **Boggle** (ou **Parole** no Brasil) e com jogabilidade inspirada no **Wordle** e **Termo**.
+
+Todo dia é gerada uma nova configuração de letras, comum a todos os jogadores daquele dia para permitir comparações de resultados.
 
 ## [Bingo](http://zelacerda.github.io/bingo)
 
@@ -26,4 +32,4 @@ O objetivo é acumular pontos resgatando o máximo de astronautas antes que o ox
 
 Lembre-se: no espaço não há fricção, e a inércia pode dificultar bastante a sua tarefa.
 
-*2020 - by zelacerda*
+*2020-2022 - by zelacerda*

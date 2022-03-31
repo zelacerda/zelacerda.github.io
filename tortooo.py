@@ -40,7 +40,7 @@ class Game:
         else: # A new game
             self.score = 0
             storage.set_value("score", self.score)
-            self.countdown = 60
+            self.countdown = 180
             storage.set_value("countdown", self.countdown)
             self.guesses = []
             storage.set_guesses(self.guesses)
