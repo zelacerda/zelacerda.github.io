@@ -18,27 +18,43 @@ class State(Enum):
 
 class Game:
     def __init__(self):
+        self.init_game()
+        self.render_page()
+        self.check_state()
+
+
+    def init_game(self):
         self.game = get_day_game()
         self.letters = get_letters(16, random_seed=self.game)
         self.act_letters = [False for _ in range(16)]
-        self.state = State.PLAY
-        self.played = False
-        self.countdown = 3
-        self.score = 0
-        self.guesses = []
         self.last_pos = None
-        self.page = Page()
-
-        self.render_page()
-        storage.set_value("countdown", self.countdown)
+        self.played = False
+        self.state = State.PLAY
+        game = storage.get_value("game")
+        if game == self.game: # Game in progress
+            self.score = storage.get_value("score")
+            self.countdown = storage.get_value("countdown")
+            self.guesses = storage.get_guesses()
+            self.word_counts = storage.get_word_counts()
+            self.area_content = storage.get_area()
+        else: # A new game
+            self.score = 0
+            storage.set_value("score", self.score)
+            self.countdown = 60
+            storage.set_value("countdown", self.countdown)
+            self.guesses = []
+            storage.set_guesses(self.guesses)
+            self.word_counts = [0 for i in range(6)]
+            storage.set_word_counts(self.word_counts)
+            self.area_content = ""
+            storage.set_value("area", self.area_content)
 
 
     def render_page(self):
-
         # Header container
         about = Div("?", id="about", Class="top-button")
         title = Div("tort.ooo", id="title")
-        stats = Div("%", id="stats", Class="top-button")
+        stats = Div("+", id="stats", Class="top-button")
 
         header = Div(id="header-container")
         for d in [about, title, stats]:
@@ -71,7 +87,7 @@ class Game:
             guess_line.append(d)
 
         # Found words area
-        self.area = Div(id="word-area")
+        self.area = Div(self.area_content, id="word-area")
 
         # Modal box
         self.modal = Div(id="modal", Class="hidden")
@@ -84,7 +100,38 @@ class Game:
         for c in [header, tp_line, grid, guess_line, self.area, self.modal]:
             all.append(c)
 
+        self.page = Page()
         self.page.append(all)
+
+
+    def check_state(self):
+        game = storage.get_value("game")
+        if not game: # User never played tort.ooo before
+            self.about()
+        elif self.countdown == 0: # User already played today
+            self.state = State.GAME_OVER
+            self.game_over()
+        storage.set_value("game", self.game)
+
+
+    def about(self):
+        self.modal_content.innerHTML = modal.show_about()
+        self.modal.class_name = "visible"
+        self.state = State.MODAL
+
+
+    def game_over(self):
+        self.clear_guess("game-over")
+        record = storage.get_and_update_record(self.score)
+        self.modal_content.innerHTML = modal.show_game_over(self.score,
+                                                            record,
+                                                            self.word_counts)
+        if self.state == State.PLAY:
+            storage.update_stats(self.word_counts, self.score)
+        self.modal.class_name = "visible"
+        self.played = True
+        self.state = State.GAME_OVER
+
 
     def click_handler(self, event):
         id = event.target.id
@@ -100,9 +147,7 @@ class Game:
             self.send_word()
 
         elif id == "about" and self.modal.class_name == "hidden":
-            self.modal_content.innerHTML = modal.show_about()
-            self.modal.class_name = "visible"
-            self.state = State.MODAL
+            self.about()
 
         elif id == "stats" and self.modal.class_name == "hidden":
             self.modal_content.innerHTML = modal.show_stats()
@@ -121,7 +166,7 @@ class Game:
         word = self.guess.textContent.lower()
         if len(word) > 2 and word not in self.guesses:
             self.guesses.append(word)
-            print(f"Mandando {word}")
+            storage.set_guesses(self.guesses)
             ajax.get(f"https://app-pkmnt5mjza-rj.a.run.app/{word}",
                      oncomplete=check)
         self.clear_guess("inactive")
@@ -143,37 +188,39 @@ class Game:
             self.div_letters[i].class_name = f"grid-item {state}"
 
 
-    def update(self):
+    def check_response(self, word):
+        if word:
+            l = len(word)
+            s = self.update_score(l)
+            self.update_area(word, s)
+
+
+    def update_time(self):
         if self.state == State.PLAY:
             self.countdown -= 1
             storage.set_value("countdown", self.countdown)
             self.timer.textContent = count2sec(self.countdown)
 
         if self.countdown == 0 and self.state == State.PLAY:
-            self.clear_guess("game-over")
-            self.modal_content.innerHTML = modal.show_game_over()
-            self.modal.class_name = "visible"
-            self.played = True
-            self.state = State.GAME_OVER
+            self.game_over()
 
 
-    def check_word(self, word):
-        if word:
-            l = len(word)
-            if l < 5:
-                p = 1
-            elif l == 5:
-                p = 2
-            elif l == 6:
-                p = 3
-            elif l == 7:
-                p = 5
-            else:
-                p = 8
+    def update_score(self, length):
+        idx = min(8, length) - 3
+        keys = ["w3", "w4", "w5", "w6", "w7", "w8"]
+        scores = [1, 1, 2, 3, 5, 8]
+        self.score += scores[idx]
+        storage.set_value("score", self.score)
+        self.word_counts[idx] += 1
+        storage.increment_key(keys[idx])
+        self.score_label.textContent = f"PONTOS: {self.score}"
+        return scores[idx]
 
-            self.score += p
-            self.area.textContent += f"{word}-{p} "
-            self.score_label.textContent = f"PONTOS: {self.score}"
+
+    def update_area(self, word, s):
+        self.area_content += f"{word}-{s} "
+        self.area.textContent = self.area_content
+        storage.set_value("area", self.area_content)
 
 
 @bind("body", "click")
@@ -183,10 +230,10 @@ def click(event):
 
 def check(req):
     word = json.loads(req.responseText)['result']
-    game.check_word(word)
+    game.check_response(word)
 
 
 def main():
     global game
     game = Game()
-    timer.set_interval(game.update, 1000)
+    timer.set_interval(game.update_time, 1000)

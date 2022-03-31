@@ -14,8 +14,8 @@ def show_about():
     <br><br>
     <center><span class="credit">
     De Floripa com ❤️ por
-    <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a>
-    (Mar/2022)
+    <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a><br>
+    versão 1.22.03 - Mar/2022
     </span></center>
     """
     return html
@@ -28,23 +28,22 @@ def show_stats():
     Média de pontos por jogo: <b>{stats["mean"]}</b><br>
     Total de jogos: <b>{stats["games"]}</b><br><br>
     <b>Palavras por número de letras:</b><br><br>
+    <center>
     3 letras: <b>{stats["counts"][0]} ({stats["pcts"][0]}%)</b><br>
     4 letras: <b>{stats["counts"][1]} ({stats["pcts"][1]}%)</b><br>
     5 letras: <b>{stats["counts"][2]} ({stats["pcts"][2]}%)</b><br>
     6 letras: <b>{stats["counts"][3]} ({stats["pcts"][3]}%)</b><br>
     7 letras: <b>{stats["counts"][4]} ({stats["pcts"][4]}%)</b><br>
     + letras: <b>{stats["counts"][5]} ({stats["pcts"][5]}%)</b>
+    </center>
     """
     return html
 
-def show_game_over():
-    score = get_value("score")
-    record = get_value("record")
-    stats = get_stats()
-
-    title = "FIM DO JOGO!"
+def show_game_over(score, record, counts):
     if score > record:
         title = "NOVO RECORDE!"
+    else:
+        title = "FIM DO JOGO!"
 
     txt = f"Fiz {score} pontos no tort.ooo de hoje."
     js = f"javascript:share('{txt}')"
@@ -52,13 +51,15 @@ def show_game_over():
 
     html = f"""
     <h2><center>{title}</center></h2>
-    Você fez {score} pontos. Veja o resultado:<br><br>
-    3 letras: <b>{stats["counts"][0]} ({stats["pcts"][0]}%)</b><br>
-    4 letras: <b>{stats["counts"][1]} ({stats["pcts"][1]}%)</b><br>
-    5 letras: <b>{stats["counts"][2]} ({stats["pcts"][2]}%)</b><br>
-    6 letras: <b>{stats["counts"][3]} ({stats["pcts"][3]}%)</b><br>
-    7 letras: <b>{stats["counts"][4]} ({stats["pcts"][4]}%)</b><br>
-    + letras: <b>{stats["counts"][5]} ({stats["pcts"][5]}%)</b><br>
+    Você fez <b>{score}</b> pontos e <b>{sum(counts)}</b> palavras.<br><br>
+    <center>
+    3 letras: <b>{counts[0]} palavras</b><br>
+    4 letras: <b>{counts[1]} palavras</b><br>
+    5 letras: <b>{counts[2]} palavras</b><br>
+    6 letras: <b>{counts[3]} palavras</b><br>
+    7 letras: <b>{counts[4]} palavras</b><br>
+    + letras: <b>{counts[5]} palavras</b><br>
+    </center>
     <br><center><a href="{js}">Compartilhe aqui seu resultado</a></center>
     <h3><center>E amanhã tem mais!</center></h3>
     """

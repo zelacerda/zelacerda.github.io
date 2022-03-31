@@ -1,24 +1,6 @@
 from browser.local_storage import storage
 
 
-def update_score(score):
-    storage['score'] = str(score)
-
-
-def update_record(score):
-    record = storage.get("record")
-    if not record or score > int(record):
-        storage["record"] = str(score)
-
-
-def increment_key(key, amount=1):
-    value = storage.get(key)
-    if not value:
-        storage[key] = str(amount)
-    else:
-        storage[key] = str(int(value) + amount)
-
-
 def get_value(key):
     value = storage.get(key)
     if not value:
@@ -29,6 +11,55 @@ def get_value(key):
 
 def set_value(key, value):
     storage[key] = str(value)
+
+
+def get_and_update_record(score):
+    record = get_value("record")
+    if not record or score > int(record):
+        storage["record"] = str(score)
+    return record
+
+
+def increment_key(key, amount=1):
+    value = storage.get(key)
+    if not value:
+        storage[key] = str(amount)
+    else:
+        storage[key] = str(int(value) + amount)
+
+
+def set_guesses(guesses):
+    storage["guesses"] = " ".join(guesses)
+
+
+def get_guesses():
+    return storage["guesses"].split()
+
+
+def get_area():
+    return storage["area"]
+
+
+def set_word_counts(values):
+    keys = ["w3", "w4", "w5", "w6", "w7", "w8"]
+    for k, v in zip(keys, values):
+        storage[k] = str(v)
+
+
+def get_word_counts():
+    keys = ["w3", "w4", "w5", "w6", "w7", "w8"]
+    values = []
+    for k in keys:
+        values.append(get_value(k))
+    return values
+
+
+def update_stats(counts, score):
+    keys = ["t3", "t4", "t5", "t6", "t7", "t8"]
+    for i, key in enumerate(keys):
+        increment_key(key, amount=counts[i])
+    increment_key("games")
+    increment_key("sum", amount=score)
 
 
 def get_stats():
@@ -48,7 +79,7 @@ def get_stats():
     result["games"] = games
 
     counts = list()
-    for key in ["c3", "c4", "c5", "c6", "c7", "c8"]:
+    for key in ["t3", "t4", "t5", "t6", "t7", "t8"]:
         counts.append(get_value(key))
     result["counts"] = counts
 
