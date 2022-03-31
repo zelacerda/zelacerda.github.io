@@ -23,7 +23,7 @@ class Game:
         self.act_letters = [False for _ in range(16)]
         self.state = State.PLAY
         self.played = False
-        self.countdown = 180
+        self.countdown = 3
         self.score = 0
         self.guesses = []
         self.last_pos = None

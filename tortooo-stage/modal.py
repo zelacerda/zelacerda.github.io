@@ -46,7 +46,9 @@ def show_game_over():
     if score > record:
         title = "NOVO RECORDE!"
 
-    js = "javascript:window.alert(navigator.share({title: 'titulo', text: 'texto', url: 'https://tort.ooo'}))"
+    txt = f"Fiz {score} pontos no tort.ooo de hoje."
+    js = f"javascript:share('{txt}')"
+    print(js)
 
     html = f"""
     <h2><center>{title}</center></h2>
@@ -57,7 +59,7 @@ def show_game_over():
     6 letras: <b>{stats["counts"][3]} ({stats["pcts"][3]}%)</b><br>
     7 letras: <b>{stats["counts"][4]} ({stats["pcts"][4]}%)</b><br>
     + letras: <b>{stats["counts"][5]} ({stats["pcts"][5]}%)</b><br>
-    <br><center><a href="{js}">Compartilhe o seu resultado</a></center>
+    <br><center><a href="{js}">Compartilhe aqui seu resultado</a></center>
     <h3><center>E amanhã tem mais!</center></h3>
     """
     return html
