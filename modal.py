@@ -1,6 +1,12 @@
 from storage import get_stats, get_value
 
 
+def _plural(n):
+    if n == 1:
+        return "palavra"
+    else:
+        return "palavras"
+
 def show_about():
     html = """
     <h2><center>SOBRE O JOGO</center></h2>
@@ -15,7 +21,7 @@ def show_about():
     <center><span class="credit">
     De Floripa com ❤️ por
     <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a><br>
-    versão 1.22.03 - Mar/2022
+    versão 1.22.04 - Abr/2022
     </span></center>
     """
     return html
@@ -39,26 +45,33 @@ def show_stats():
     """
     return html
 
-def show_game_over(score, record, counts):
+def show_game_over(game, score, record, counts):
     if score > record:
         title = "NOVO RECORDE!"
     else:
         title = "FIM DO JOGO!"
 
-    txt = f"Fiz {score} pontos no tort.ooo de hoje."
+    txt = f"Fiz {score} pontos e {sum(counts)} palavras "\
+          + f"no tort.ooo de hoje (#{game})\\n\\n"\
+          + f"3️⃣ {counts[0]} {_plural(counts[0])}\\n"\
+          + f"4️⃣ {counts[1]} {_plural(counts[1])}\\n"\
+          + f"5️⃣ {counts[2]} {_plural(counts[2])}\\n"\
+          + f"6️⃣ {counts[3]} {_plural(counts[3])}\\n"\
+          + f"7️⃣ {counts[4]} {_plural(counts[4])}\\n"\
+          + f"8️⃣+ {counts[5]} {_plural(counts[5])}"
+
     js = f"javascript:share('{txt}')"
-    print(js)
 
     html = f"""
     <h2><center>{title}</center></h2>
     Você fez <b>{score}</b> pontos e <b>{sum(counts)}</b> palavras.<br><br>
     <center>
-    3 letras: <b>{counts[0]} palavras</b><br>
-    4 letras: <b>{counts[1]} palavras</b><br>
-    5 letras: <b>{counts[2]} palavras</b><br>
-    6 letras: <b>{counts[3]} palavras</b><br>
-    7 letras: <b>{counts[4]} palavras</b><br>
-    + letras: <b>{counts[5]} palavras</b><br>
+    3 letras: <b>{counts[0]} {_plural(counts[0])}</b><br>
+    4 letras: <b>{counts[1]} {_plural(counts[1])}</b><br>
+    5 letras: <b>{counts[2]} {_plural(counts[2])}</b><br>
+    6 letras: <b>{counts[3]} {_plural(counts[3])}</b><br>
+    7 letras: <b>{counts[4]} {_plural(counts[4])}</b><br>
+    + letras: <b>{counts[5]} {_plural(counts[5])}</b><br>
     </center>
     <br><center><a href="{js}">Compartilhe aqui seu resultado</a></center>
     <h3><center>E amanhã tem mais!</center></h3>

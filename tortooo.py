@@ -123,7 +123,8 @@ class Game:
     def game_over(self):
         self.clear_guess("game-over")
         record = storage.get_and_update_record(self.score)
-        self.modal_content.innerHTML = modal.show_game_over(self.score,
+        self.modal_content.innerHTML = modal.show_game_over(self.game,
+                                                            self.score,
                                                             record,
                                                             self.word_counts)
         if self.state == State.PLAY:
