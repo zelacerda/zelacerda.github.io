@@ -21,7 +21,7 @@ def show_about():
     <center><span class="credit">
     De Floripa com ❤️ por
     <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a><br>
-    versão 1.22.04 - Abr/2022
+    versão 1.22.4.2 - Abr/2022
     </span></center>
     """
     return html

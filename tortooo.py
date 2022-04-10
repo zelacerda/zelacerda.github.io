@@ -209,7 +209,7 @@ class Game:
     def update_score(self, length):
         idx = min(8, length) - 3
         keys = ["w3", "w4", "w5", "w6", "w7", "w8"]
-        scores = [1, 1, 2, 3, 5, 8]
+        scores = [1, 1, 2, 3, 5, 11]
         self.score += scores[idx]
         storage.set_value("score", self.score)
         self.word_counts[idx] += 1
