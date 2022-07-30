@@ -1,4 +1,4 @@
-import json
+from json import loads
 from enum import Enum
 
 #from browser import window
@@ -230,7 +230,7 @@ def click(event):
 
 
 def check(req):
-    word = json.loads(req.responseText)['result']
+    word = loads(req.responseText)['result']
     game.check_response(word)
 
 

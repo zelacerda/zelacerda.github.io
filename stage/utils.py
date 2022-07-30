@@ -1,6 +1,5 @@
-import time
+from time import time
 from random import random, seed, shuffle
-from turtle import pos
 
 
 FREQ = {'a': 0.1462, 'b': 0.0104, 'c': 0.0388, 'd': 0.0499,
@@ -49,7 +48,7 @@ def count2sec(count):
 
 def get_day_game():
     init_time = 1644116400 # 2022-02-06 00:00
-    now = int(time.time())
+    now = int(time())
     day_game = int((now - init_time) / 86400) + 1
     return day_game
 
