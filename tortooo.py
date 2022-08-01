@@ -1,4 +1,4 @@
-import json
+from json import loads
 from enum import Enum
 
 #from browser import window
@@ -25,7 +25,7 @@ class Game:
 
     def init_game(self):
         self.game = get_day_game()
-        self.letters = get_letters(16, random_seed=self.game)
+        self.letters = get_letters(8, 8, random_seed=self.game)
         self.act_letters = [False for _ in range(16)]
         self.last_pos = None
         self.played = False
@@ -230,7 +230,7 @@ def click(event):
 
 
 def check(req):
-    word = json.loads(req.responseText)['result']
+    word = loads(req.responseText)['result']
     game.check_response(word)
 
 

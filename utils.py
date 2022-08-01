@@ -1,30 +1,35 @@
-import time
-from random import random, seed
-from turtle import pos
+from time import time
+from random import random, seed, shuffle
 
 
-FREQ = {'a': 0.1462, 'b': 0.0104, 'c': 0.0388, 'd': 0.0499,
-        'e': 0.1257, 'f': 0.0102, 'g': 0.0130, 'h': 0.0128,
-        'i': 0.0618, 'j': 0.0040, 'k': 0.0002, 'l': 0.0278,
-        'm': 0.0474, 'n': 0.0505, 'o': 0.1073, 'p': 0.0252,
-        'q': 0.0120, 'r': 0.0653, 's': 0.0781, 't': 0.0434,
-        'u': 0.0463, 'v': 0.0167, 'w': 0.0001, 'x': 0.0021,
-        'y': 0.0001, 'z': 0.0047}
+V_FREQ = {'a': 0.3235, 'e': 0.2592, 'i': 0.1971, 'o': 0.1610,
+          'u': 0.0592}
 
-def get_letter():
+C_FREQ = {'b': 0.0233, 'c': 0.0757, 'd': 0.0612, 'f': 0.0226,
+          'g': 0.0258, 'h': 0.0142, 'j': 0.0064, 'l': 0.0493,
+          'm': 0.0981, 'n': 0.0800, 'p': 0.0397, 'q': 0.0062,
+          'r': 0.1743, 's': 0.1920, 't': 0.0780, 'v': 0.0332,
+          'x': 0.0060, 'z': 0.0140}
+
+
+def get_letter(group='vowel'):
+    freqs = {'vowel': V_FREQ, 'consonant': C_FREQ}
     value = random()
     acc = 0
-    for l, v in FREQ.items():
-        acc+= v
+    for l, v in freqs[group].items():
+        acc += v
         if value <= acc:
             return l.upper()
 
-def get_letters(n, random_seed=None):
+def get_letters(v, c, random_seed=None):
     if random_seed:
         seed(random_seed)
     result = []
-    for _ in range(n):
-        result.append(get_letter())
+    for _ in range(v):
+        result.append(get_letter('vowel'))
+    for _ in range(c):
+        result.append(get_letter('consonant'))
+    shuffle(result)
     return result
 
 def count2sec(count):
@@ -34,7 +39,7 @@ def count2sec(count):
 
 def get_day_game():
     init_time = 1644116400 # 2022-02-06 00:00
-    now = int(time.time())
+    now = int(time())
     day_game = int((now - init_time) / 86400) + 1
     return day_game
 
