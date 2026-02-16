@@ -1,16 +1,710 @@
-<!DOCTYPE html><html><head><title>tort.ooo</title><meta charset="utf-8">
+<!DOCTYPE html>
+<html>
+<head>
+<title>tort.ooo</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0, viewport-fit=cover">
-<script type="text/javascript" src="brython.js"></script>
-<script type="text/javascript" src="brython_stdlib.js"></script>
-<script type="text/javascript" src="share.js"></script>
-<link rel="stylesheet" type="text/css" href="tortooo.css"></head>
-<body onload="brython()"></body>
-</html>
+<style>
+body{
+    font-family: 'Candara', 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+    text-align: center;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    background-color: #333;
+    color: #fff;
+    user-select: none;
+}
 
+#all-container{
+    display: grid;
+    grid-template-rows: 60px 30px 365px 60px auto;
+    height: 100%;
+    max-width: 360px;
+    margin: auto;
+}
 
-<script type="text/python">
+#grid-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    margin-bottom: 10px;
+}
 
-from tortooo import main
-main()
+.grid-item{
+    font-size: min(54px, 15vw);
+    font-weight: 950;
+    height: auto;
+    margin: 5%;
+    border-radius: 15%;
+    line-height: 150%;
+}
 
+.inactive{
+    color: #000;
+    background-color: #ccc;
+    box-shadow: inset 0 0.3rem #fff, inset 0 -0.3rem #999, inset 0.3rem 0 #fff, inset -0.3rem 0 #999;
+}
+
+.active{
+    color: #000;
+    background-color: #cc6;
+    box-shadow: inset 0 0.3rem #ffc, inset 0 -0.3rem #996, inset 0.3rem 0 #ffc, inset -0.3rem 0 #996;
+}
+
+.game-over{
+    color: #999;
+    background-color: #ccc;
+    box-shadow: inset 0 0.3rem #fff, inset 0 -0.3rem #999, inset 0.3rem 0 #fff, inset -0.3rem 0 #999;
+}
+
+#header-container{
+    display: grid;
+    grid-template-columns: 45px auto 45px;
+}
+
+#timer-points-container{
+    display: grid;
+    grid-template-columns: auto 150px;
+    font-size: 25px;
+    font-weight: 900;
+    color: #cc6;
+}
+
+#word-guess-container{
+    display: grid;
+    grid-template-columns: auto 70px 60px;
+    font-size: 35px;
+}
+
+#score{
+    text-align: left;
+}
+
+#timer{
+    text-align: right;
+}
+
+.top-button{
+    font-size:27px;
+    font-weight: 800;
+    text-align: center;
+    padding-top: 2px;
+    border-style: solid;
+    border-color: #555;
+    border-width: 2px;
+    border-radius: 15%;
+    color: #999;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#title{
+    text-align: center;
+    font-size: 45px;
+    font-weight: 950;
+    color: #fff;
+    margin-top: 5px;
+}
+
+#word{
+    background-color: #555;
+    border-radius: 8px;
+    font-weight: 800;
+    color: #cc6;
+    line-height: 150%;
+    padding-right: 10px;
+    margin-right: 10px;
+    overflow: hidden;
+    text-align: right;
+    direction: rtl;
+    padding-top: 4px;
+}
+
+#cancel{
+    background-color: #c66;
+    border-radius: 8px;
+    margin-right: 10px;
+    line-height: 150%;
+}
+
+#send{
+    background-color: #6c6;
+    border-radius: 8px;
+    line-height: 150%;
+}
+
+#word-area{
+    text-align: left;
+    min-height: 100px;
+    margin: 10px 0px 0px 0px;
+    background-color: #222;
+    color:#cc6;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+#modal {
+    z-index: 1;
+    position: fixed;
+    text-align: left;
+    width: 300px;
+    margin: 20px;
+    top: 90px;
+    height: 375px;
+    font-size: 17px;
+    background-color: #222;
+    color: #ccc;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+#modal-close {
+    width: 20px;
+    text-align: center;
+    padding: 5px 3px 3px 3px;
+    font-size: 16px;
+    font-weight: 950;
+    border-style: solid;
+    border-color: #555;
+    border-width: 2px;
+    border-radius: 15%;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.text-highlight {
+    color: #fff;
+    font-weight: 950;
+}
+
+.credit {
+    color: #cc6;
+    font-size: 14px;
+}
+
+h2 {
+    font-size: 28px;
+    color: #cc6;
+}
+
+a {
+    color:#ccc
+}
+</style>
+</head>
+<body>
+<script>
+// ============================================================
+// Utils
+// ============================================================
+
+const V_FREQ = {a: 0.3235, e: 0.2592, i: 0.1971, o: 0.1610, u: 0.0592};
+
+const C_FREQ = {
+  b: 0.0233, c: 0.0757, d: 0.0612, f: 0.0226,
+  g: 0.0258, h: 0.0142, j: 0.0064, l: 0.0493,
+  m: 0.0981, n: 0.0800, p: 0.0397, q: 0.0062,
+  r: 0.1743, s: 0.1920, t: 0.0780, v: 0.0332,
+  x: 0.0060, z: 0.0140
+};
+
+function mulberry32(seed) {
+  return function() {
+    seed |= 0;
+    seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+let _rng = null;
+
+function getLetter(group) {
+  const freqs = group === 'vowel' ? V_FREQ : C_FREQ;
+  const value = _rng();
+  let acc = 0;
+  for (const [l, v] of Object.entries(freqs)) {
+    acc += v;
+    if (value <= acc) return l.toUpperCase();
+  }
+  // fallback: return last letter
+  const keys = Object.keys(freqs);
+  return keys[keys.length - 1].toUpperCase();
+}
+
+function seededShuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(_rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function getLetters(v, c, seed) {
+  if (seed) _rng = mulberry32(seed);
+  const result = [];
+  for (let i = 0; i < v; i++) result.push(getLetter('vowel'));
+  for (let i = 0; i < c; i++) result.push(getLetter('consonant'));
+  seededShuffle(result);
+  return result;
+}
+
+function count2sec(count) {
+  const min = Math.floor(count / 60);
+  const sec = count % 60;
+  return `${min}:${String(sec).padStart(2, '0')}`;
+}
+
+function getDayGame() {
+  const initTime = 1644116400; // 2022-02-06 00:00
+  const now = Math.floor(Date.now() / 1000);
+  return Math.floor((now - initTime) / 86400) + 1;
+}
+
+function posToCoord(num, gridSize) {
+  gridSize = gridSize || 4;
+  return [Math.floor(num / gridSize), num % gridSize];
+}
+
+function isAdjacent(lastPos, newPos) {
+  if (lastPos === null) return true;
+  const [x1, y1] = posToCoord(lastPos);
+  const [x2, y2] = posToCoord(newPos);
+  const dist = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+  return dist === 1;
+}
+
+// ============================================================
+// Storage
+// ============================================================
+
+function getValue(key) {
+  const value = localStorage.getItem(key);
+  if (!value) return 0;
+  return parseInt(value) || 0;
+}
+
+function setValue(key, value) {
+  localStorage.setItem(key, String(value));
+}
+
+function getAndUpdateRecord(score) {
+  const record = getValue('record');
+  if (!record || score > record) {
+    localStorage.setItem('record', String(score));
+  }
+  return record;
+}
+
+function incrementKey(key, amount) {
+  if (amount === undefined) amount = 1;
+  const value = localStorage.getItem(key);
+  if (!value) {
+    localStorage.setItem(key, String(amount));
+  } else {
+    localStorage.setItem(key, String(parseInt(value) + amount));
+  }
+}
+
+function setGuesses(guesses) {
+  localStorage.setItem('guesses', guesses.join(' '));
+}
+
+function getGuesses() {
+  const val = localStorage.getItem('guesses');
+  if (!val) return [];
+  return val.split(' ').filter(Boolean);
+}
+
+function getArea() {
+  return localStorage.getItem('area') || '';
+}
+
+function setWordCounts(values) {
+  const keys = ['w3', 'w4', 'w5', 'w6', 'w7', 'w8'];
+  for (let i = 0; i < keys.length; i++) {
+    localStorage.setItem(keys[i], String(values[i]));
+  }
+}
+
+function getWordCounts() {
+  const keys = ['w3', 'w4', 'w5', 'w6', 'w7', 'w8'];
+  return keys.map(k => getValue(k));
+}
+
+function updateStats(counts, score) {
+  const keys = ['t3', 't4', 't5', 't6', 't7', 't8'];
+  for (let i = 0; i < keys.length; i++) {
+    incrementKey(keys[i], counts[i]);
+  }
+  incrementKey('games');
+  incrementKey('sum', score);
+}
+
+function getStats() {
+  const result = {};
+  result.record = getValue('record');
+
+  const games = getValue('games');
+  const sumScore = getValue('sum');
+  result.mean = games === 0 ? 0 : Math.round(sumScore / games);
+  result.games = games;
+
+  const counts = ['t3', 't4', 't5', 't6', 't7', 't8'].map(k => getValue(k));
+  result.counts = counts;
+
+  const total = counts.reduce((a, b) => a + b, 0);
+  result.pcts = total === 0 ? counts.slice() : counts.map(i => Math.round(i / total * 100));
+
+  return result;
+}
+
+// ============================================================
+// Modal
+// ============================================================
+
+function plural(n) {
+  return n === 1 ? 'palavra' : 'palavras';
+}
+
+function showAbout() {
+  return `
+    <h2><center>SOBRE O JOGO</center></h2>
+    <span class="text-highlight">tort.ooo</span> é inspirado no jogo de dados
+    <i>Boggle</i>, distribuído no Brasil pela Estrela com o nome
+    <i>Parole</i>. Também é semelhante ao passatempo <i>Torto</i> das
+    revistas de palavras cruzadas.<br><br>
+
+    Forme palavras unindo letras adjacentes, mas lembre-se que
+    não pode haver repetição de letras. Palavras maiores valem mais pontos.
+    <br><br>
+    <center><span class="credit">
+    De Floripa com ❤️ por
+    <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a><br>
+    versão 1.22.7.30 - Jul/2022
+    </span></center>
+  `;
+}
+
+function showStats() {
+  const stats = getStats();
+  return `
+    <h2><center>ESTATÍSTICAS</center></h2>
+    Recorde de pontos: <b>${stats.record}</b><br>
+    Média de pontos por jogo: <b>${stats.mean}</b><br>
+    Total de jogos: <b>${stats.games}</b><br><br>
+    <b>Palavras por número de letras:</b><br><br>
+    <center>
+    3 letras: <b>${stats.counts[0]} (${stats.pcts[0]}%)</b><br>
+    4 letras: <b>${stats.counts[1]} (${stats.pcts[1]}%)</b><br>
+    5 letras: <b>${stats.counts[2]} (${stats.pcts[2]}%)</b><br>
+    6 letras: <b>${stats.counts[3]} (${stats.pcts[3]}%)</b><br>
+    7 letras: <b>${stats.counts[4]} (${stats.pcts[4]}%)</b><br>
+    + letras: <b>${stats.counts[5]} (${stats.pcts[5]}%)</b>
+    </center>
+  `;
+}
+
+function showGameOver(game, score, record, counts) {
+  const title = score > record ? 'NOVO RECORDE!' : 'FIM DO JOGO!';
+  const total = counts.reduce((a, b) => a + b, 0);
+
+  const txt = `Fiz ${score} pontos e ${total} palavras `
+    + `no tort.ooo de hoje (#${game})\\n\\n`
+    + `3️⃣ ${counts[0]} ${plural(counts[0])}\\n`
+    + `4️⃣ ${counts[1]} ${plural(counts[1])}\\n`
+    + `5️⃣ ${counts[2]} ${plural(counts[2])}\\n`
+    + `6️⃣ ${counts[3]} ${plural(counts[3])}\\n`
+    + `7️⃣ ${counts[4]} ${plural(counts[4])}\\n`
+    + `8️⃣+ ${counts[5]} ${plural(counts[5])}`;
+
+  return `
+    <h2><center>${title}</center></h2>
+    Você fez <b>${score}</b> pontos e <b>${total}</b> palavras.<br><br>
+    <center>
+    3 letras: <b>${counts[0]} ${plural(counts[0])}</b><br>
+    4 letras: <b>${counts[1]} ${plural(counts[1])}</b><br>
+    5 letras: <b>${counts[2]} ${plural(counts[2])}</b><br>
+    6 letras: <b>${counts[3]} ${plural(counts[3])}</b><br>
+    7 letras: <b>${counts[4]} ${plural(counts[4])}</b><br>
+    + letras: <b>${counts[5]} ${plural(counts[5])}</b><br>
+    </center>
+    <br><center><a href="javascript:share('${txt}')">Compartilhe aqui seu resultado</a></center>
+    <h3><center>E amanhã tem mais!</center></h3>
+  `;
+}
+
+// ============================================================
+// Share
+// ============================================================
+
+function share(text) {
+  if (navigator.share) {
+    navigator.share({title: text, text: text})
+      .then(() => console.log('Successful share'))
+      .catch((error) => console.log('Error sharing:', error));
+  } else {
+    navigator.clipboard.writeText(text)
+      .then(() => alert('Resultado copiado para a área de transferência.'))
+      .catch((error) => console.error('Clipboard error:', error));
+  }
+}
+
+// ============================================================
+// DOM helpers
+// ============================================================
+
+function div(text, id, className) {
+  const el = document.createElement('div');
+  if (text) el.textContent = text;
+  if (id) el.id = id;
+  if (className) el.className = className;
+  return el;
+}
+
+// ============================================================
+// Game
+// ============================================================
+
+const State = { PLAY: 0, MODAL: 1, GAME_OVER: 2 };
+
+class Game {
+  constructor() {
+    this.initGame();
+    this.renderPage();
+    this.checkState();
+  }
+
+  initGame() {
+    this.game = getDayGame();
+    this.letters = getLetters(8, 8, this.game);
+    this.actLetters = new Array(16).fill(false);
+    this.lastPos = null;
+    this.played = false;
+    this.state = State.PLAY;
+
+    const savedGame = getValue('game');
+    if (savedGame === this.game) { // Game in progress
+      this.score = getValue('score');
+      this.countdown = getValue('countdown');
+      this.guesses = getGuesses();
+      this.wordCounts = getWordCounts();
+      this.areaContent = getArea();
+    } else { // A new game
+      this.score = 0;
+      setValue('score', this.score);
+      this.countdown = 180;
+      setValue('countdown', this.countdown);
+      this.guesses = [];
+      setGuesses(this.guesses);
+      this.wordCounts = [0, 0, 0, 0, 0, 0];
+      setWordCounts(this.wordCounts);
+      this.areaContent = '';
+      setValue('area', this.areaContent);
+    }
+  }
+
+  renderPage() {
+    // Header container
+    const about = div('?', 'about', 'top-button');
+    const title = div('tort.ooo', 'title');
+    const stats = div('+', 'stats', 'top-button');
+
+    const header = div(null, 'header-container');
+    header.appendChild(about);
+    header.appendChild(title);
+    header.appendChild(stats);
+
+    // Timer and points line container
+    this.scoreLabel = div(`PONTOS: ${this.score}`, 'score');
+    this.timerEl = div(count2sec(this.countdown), 'timer');
+
+    const tpLine = div(null, 'timer-points-container');
+    tpLine.appendChild(this.scoreLabel);
+    tpLine.appendChild(this.timerEl);
+
+    // Grid container
+    const grid = div(null, 'grid-container');
+    this.divLetters = [];
+    for (let i = 0; i < this.letters.length; i++) {
+      const d = div(this.letters[i], 'letter-' + i, 'grid-item inactive');
+      this.divLetters.push(d);
+      grid.appendChild(d);
+    }
+
+    // Guess line container
+    this.guessEl = div(null, 'word');
+    this.cancelEl = div('\u2718', 'cancel');
+    this.sendEl = div('\u2714', 'send');
+
+    const guessLine = div(null, 'word-guess-container');
+    guessLine.appendChild(this.guessEl);
+    guessLine.appendChild(this.cancelEl);
+    guessLine.appendChild(this.sendEl);
+
+    // Found words area
+    this.areaEl = div(this.areaContent, 'word-area');
+
+    // Modal box
+    this.modalEl = div(null, 'modal', 'hidden');
+    this.modalContentEl = div();
+    this.modalEl.appendChild(div('X', 'modal-close'));
+    this.modalEl.appendChild(this.modalContentEl);
+
+    // Putting all containers together and render page
+    const all = div(null, 'all-container');
+    all.appendChild(header);
+    all.appendChild(tpLine);
+    all.appendChild(grid);
+    all.appendChild(guessLine);
+    all.appendChild(this.areaEl);
+    all.appendChild(this.modalEl);
+
+    document.body.appendChild(all);
+  }
+
+  checkState() {
+    const savedGame = getValue('game');
+    if (!savedGame) { // User never played tort.ooo before
+      this.about();
+    } else if (this.countdown === 0) { // User already played today
+      this.state = State.GAME_OVER;
+      this.gameOver();
+    }
+    setValue('game', this.game);
+  }
+
+  about() {
+    this.modalContentEl.innerHTML = showAbout();
+    this.modalEl.className = 'visible';
+    this.state = State.MODAL;
+  }
+
+  gameOver() {
+    this.clearGuess('game-over');
+    const record = getAndUpdateRecord(this.score);
+    this.modalContentEl.innerHTML = showGameOver(this.game, this.score, record, this.wordCounts);
+    if (this.state === State.PLAY) {
+      updateStats(this.wordCounts, this.score);
+    }
+    this.modalEl.className = 'visible';
+    this.played = true;
+    this.state = State.GAME_OVER;
+  }
+
+  clickHandler(event) {
+    const id = event.target.id;
+
+    if (id.substring(0, 6) === 'letter' && this.state === State.PLAY) {
+      const divId = parseInt(id.substring(7));
+      this.checkLetter(divId);
+    } else if (id === 'cancel' && this.state === State.PLAY) {
+      this.clearGuess('inactive');
+    } else if (id === 'send' && this.state === State.PLAY) {
+      this.sendWord();
+    } else if (id === 'about' && this.modalEl.className === 'hidden') {
+      this.about();
+    } else if (id === 'stats' && this.modalEl.className === 'hidden') {
+      this.modalContentEl.innerHTML = showStats();
+      this.modalEl.className = 'visible';
+      this.state = State.MODAL;
+    } else if (id === 'modal-close') {
+      this.modalEl.className = 'hidden';
+      if (this.played) {
+        this.state = State.GAME_OVER;
+      } else {
+        this.state = State.PLAY;
+      }
+    }
+  }
+
+  sendWord() {
+    const word = this.guessEl.textContent.toLowerCase();
+    if (word.length > 2 && this.guesses.indexOf(word) === -1) {
+      this.guesses.push(word);
+      setGuesses(this.guesses);
+      fetch(`https://app-pkmnt5mjza-rj.a.run.app/${word}`)
+        .then(r => r.json())
+        .then(data => this.checkResponse(data.result))
+        .catch(err => console.error('Fetch error:', err));
+    }
+    this.clearGuess('inactive');
+  }
+
+  checkLetter(divId) {
+    if (!this.actLetters[divId] && isAdjacent(this.lastPos, divId)) {
+      this.lastPos = divId;
+      this.actLetters[divId] = true;
+      this.divLetters[divId].className = 'grid-item active';
+      this.guessEl.textContent += this.letters[divId];
+    }
+  }
+
+  clearGuess(state) {
+    this.guessEl.textContent = '';
+    this.lastPos = null;
+    for (let i = 0; i < 16; i++) {
+      this.actLetters[i] = false;
+      this.divLetters[i].className = 'grid-item ' + state;
+    }
+  }
+
+  checkResponse(word) {
+    if (word) {
+      const l = word.length;
+      const s = this.updateScore(l);
+      this.updateArea(word, s);
+    }
+  }
+
+  updateTime() {
+    if (this.state === State.PLAY) {
+      this.countdown -= 1;
+      setValue('countdown', this.countdown);
+      this.timerEl.textContent = count2sec(this.countdown);
+    }
+    if (this.countdown === 0 && this.state === State.PLAY) {
+      this.gameOver();
+    }
+  }
+
+  updateScore(length) {
+    const idx = Math.min(8, length) - 3;
+    const keys = ['w3', 'w4', 'w5', 'w6', 'w7', 'w8'];
+    const scores = [1, 1, 2, 3, 5, 11];
+    this.score += scores[idx];
+    setValue('score', this.score);
+    this.wordCounts[idx] += 1;
+    incrementKey(keys[idx]);
+    this.scoreLabel.textContent = `PONTOS: ${this.score}`;
+    return scores[idx];
+  }
+
+  updateArea(word, s) {
+    this.areaContent += `${word}-${s} `;
+    this.areaEl.textContent = this.areaContent;
+    setValue('area', this.areaContent);
+  }
+}
+
+// ============================================================
+// Entry point
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  const game = new Game();
+  document.body.addEventListener('click', e => game.clickHandler(e));
+  setInterval(() => game.updateTime(), 1000);
+});
 </script>
+</body>
+</html>
