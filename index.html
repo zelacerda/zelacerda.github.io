@@ -29,6 +29,16 @@ body{
     grid-template-columns: 1fr 1fr 1fr 1fr;
     margin-bottom: 10px;
     touch-action: none;
+    position: relative;
+}
+
+#path-overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
 }
 
 .grid-item{
@@ -73,7 +83,7 @@ body{
 
 #word-guess-container{
     display: grid;
-    grid-template-columns: auto 70px 60px;
+    grid-template-columns: 1fr;
     font-size: 35px;
 }
 
@@ -119,19 +129,6 @@ body{
     text-align: right;
     direction: rtl;
     padding-top: 4px;
-}
-
-#cancel{
-    background-color: #c66;
-    border-radius: 8px;
-    margin-right: 10px;
-    line-height: 150%;
-}
-
-#send{
-    background-color: #6c6;
-    border-radius: 8px;
-    line-height: 150%;
 }
 
 #word-area{
@@ -495,6 +492,9 @@ class Game {
     this.isDragging = false;
     this.dragDidMove = false;
     this.dragEndTime = 0;
+    this.selectedPath = [];
+    this.dragX = 0;
+    this.dragY = 0;
 
     const savedGame = getValue('game');
     if (savedGame === this.game) { // Game in progress
@@ -545,15 +545,17 @@ class Game {
       grid.appendChild(d);
     }
 
+    // SVG overlay for path lines
+    const svgNS = 'http://www.w3.org/2000/svg';
+    this.svgOverlay = document.createElementNS(svgNS, 'svg');
+    this.svgOverlay.id = 'path-overlay';
+    grid.appendChild(this.svgOverlay);
+
     // Guess line container
     this.guessEl = div(null, 'word');
-    this.cancelEl = div('\u2718', 'cancel');
-    this.sendEl = div('\u2714', 'send');
 
     const guessLine = div(null, 'word-guess-container');
     guessLine.appendChild(this.guessEl);
-    guessLine.appendChild(this.cancelEl);
-    guessLine.appendChild(this.sendEl);
 
     // Found words area
     this.areaEl = div(this.areaContent, 'word-area');
@@ -612,10 +614,6 @@ class Game {
     if (id.substring(0, 6) === 'letter' && this.state === State.PLAY) {
       const divId = parseInt(id.substring(7));
       this.checkLetter(divId);
-    } else if (id === 'cancel' && this.state === State.PLAY) {
-      this.clearGuess('inactive');
-    } else if (id === 'send' && this.state === State.PLAY) {
-      this.sendWord();
     } else if (id === 'about' && this.modalEl.className === 'hidden') {
       this.about();
     } else if (id === 'stats' && this.modalEl.className === 'hidden') {
@@ -649,18 +647,88 @@ class Game {
     if (!this.actLetters[divId] && isAdjacent(this.lastPos, divId)) {
       this.lastPos = divId;
       this.actLetters[divId] = true;
-      this.divLetters[divId].className = 'grid-item active';
       this.guessEl.textContent += this.letters[divId];
+      this.selectedPath.push(divId);
+      this.updatePathOverlay();
     }
   }
 
   clearGuess(state) {
     this.guessEl.textContent = '';
     this.lastPos = null;
+    this.clearPathOverlay();
     for (let i = 0; i < 16; i++) {
       this.actLetters[i] = false;
       this.divLetters[i].className = 'grid-item ' + state;
     }
+  }
+
+  updatePathOverlay() {
+    const svg = this.svgOverlay;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    if (this.selectedPath.length === 0) return;
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const gridRect = svg.getBoundingClientRect();
+    const points = [];
+    let circleR = 0;
+    let strokeW = 4;
+
+    for (const idx of this.selectedPath) {
+      const r = this.divLetters[idx].getBoundingClientRect();
+      points.push({
+        x: r.left + r.width / 2 - gridRect.left,
+        y: r.top + r.height / 2 - gridRect.top
+      });
+      if (!circleR) {
+        const size = Math.min(r.width, r.height);
+        circleR = size * 0.32;
+        strokeW = Math.max(5, size * 0.12);
+      }
+    }
+
+    if (points.length > 1) {
+      const line = document.createElementNS(svgNS, 'polyline');
+      line.setAttribute('points', points.map(p => p.x + ',' + p.y).join(' '));
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', '#cc6');
+      line.setAttribute('stroke-width', strokeW);
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('stroke-linejoin', 'round');
+      line.setAttribute('opacity', '0.9');
+      svg.appendChild(line);
+    }
+
+    for (const p of points) {
+      const c = document.createElementNS(svgNS, 'circle');
+      c.setAttribute('cx', p.x);
+      c.setAttribute('cy', p.y);
+      c.setAttribute('r', circleR);
+      c.setAttribute('fill', '#cc6');
+      svg.appendChild(c);
+    }
+
+    if (this.isDragging && points.length > 0) {
+      const last = points[points.length - 1];
+      const tx = this.dragX - gridRect.left;
+      const ty = this.dragY - gridRect.top;
+      const trail = document.createElementNS(svgNS, 'line');
+      trail.setAttribute('x1', last.x);
+      trail.setAttribute('y1', last.y);
+      trail.setAttribute('x2', tx);
+      trail.setAttribute('y2', ty);
+      trail.setAttribute('stroke', '#cc6');
+      trail.setAttribute('stroke-width', strokeW);
+      trail.setAttribute('stroke-linecap', 'round');
+      trail.setAttribute('opacity', '0.5');
+      svg.appendChild(trail);
+    }
+  }
+
+  clearPathOverlay() {
+    this.selectedPath = [];
+    const svg = this.svgOverlay;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
   }
 
   isNearCenter(el, x, y) {
@@ -675,6 +743,8 @@ class Game {
     this.clearGuess('inactive');
     this.isDragging = true;
     this.dragDidMove = false;
+    this.dragX = x;
+    this.dragY = y;
     const el = document.elementFromPoint(x, y);
     if (el && el.id && el.id.substring(0, 6) === 'letter' && this.isNearCenter(el, x, y)) {
       this.checkLetter(parseInt(el.id.substring(7)));
@@ -684,10 +754,13 @@ class Game {
   dragMove(x, y) {
     if (!this.isDragging || this.state !== State.PLAY) return;
     this.dragDidMove = true;
+    this.dragX = x;
+    this.dragY = y;
     const el = document.elementFromPoint(x, y);
-    if (!el || !el.id || el.id.substring(0, 6) !== 'letter') return;
-    if (!this.isNearCenter(el, x, y)) return;
-    this.checkLetter(parseInt(el.id.substring(7)));
+    if (el && el.id && el.id.substring(0, 6) === 'letter' && this.isNearCenter(el, x, y)) {
+      this.checkLetter(parseInt(el.id.substring(7)));
+    }
+    this.updatePathOverlay();
   }
 
   dragEnd() {
