@@ -28,6 +28,7 @@ body{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     margin-bottom: 10px;
+    touch-action: none;
 }
 
 .grid-item{
@@ -491,6 +492,9 @@ class Game {
     this.lastPos = null;
     this.played = false;
     this.state = State.PLAY;
+    this.isDragging = false;
+    this.dragDidMove = false;
+    this.dragEndTime = 0;
 
     const savedGame = getValue('game');
     if (savedGame === this.game) { // Game in progress
@@ -602,6 +606,7 @@ class Game {
   }
 
   clickHandler(event) {
+    if (this.dragEndTime && Date.now() - this.dragEndTime < 300) return;
     const id = event.target.id;
 
     if (id.substring(0, 6) === 'letter' && this.state === State.PLAY) {
@@ -658,6 +663,43 @@ class Game {
     }
   }
 
+  isNearCenter(el, x, y) {
+    const r = el.getBoundingClientRect();
+    const dx = (x - (r.left + r.width / 2)) / (r.width / 2);
+    const dy = (y - (r.top + r.height / 2)) / (r.height / 2);
+    return dx * dx + dy * dy < 0.5;
+  }
+
+  dragStart(x, y) {
+    if (this.state !== State.PLAY) return;
+    this.clearGuess('inactive');
+    this.isDragging = true;
+    this.dragDidMove = false;
+    const el = document.elementFromPoint(x, y);
+    if (el && el.id && el.id.substring(0, 6) === 'letter' && this.isNearCenter(el, x, y)) {
+      this.checkLetter(parseInt(el.id.substring(7)));
+    }
+  }
+
+  dragMove(x, y) {
+    if (!this.isDragging || this.state !== State.PLAY) return;
+    this.dragDidMove = true;
+    const el = document.elementFromPoint(x, y);
+    if (!el || !el.id || el.id.substring(0, 6) !== 'letter') return;
+    if (!this.isNearCenter(el, x, y)) return;
+    this.checkLetter(parseInt(el.id.substring(7)));
+  }
+
+  dragEnd() {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+    if (this.dragDidMove && this.state === State.PLAY && this.guessEl.textContent.length > 0) {
+      this.sendWord();
+    }
+    this.dragDidMove = false;
+    this.dragEndTime = Date.now();
+  }
+
   checkResponse(word) {
     if (word) {
       const l = word.length;
@@ -704,6 +746,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new Game();
   document.body.addEventListener('click', e => game.clickHandler(e));
   setInterval(() => game.updateTime(), 1000);
+
+  const grid = document.getElementById('grid-container');
+
+  // Touch (mobile)
+  grid.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    game.dragStart(t.clientX, t.clientY);
+  }, { passive: false });
+
+  grid.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    game.dragMove(t.clientX, t.clientY);
+  }, { passive: false });
+
+  grid.addEventListener('touchend', () => game.dragEnd());
+  grid.addEventListener('touchcancel', () => game.dragEnd());
+
+  // Mouse (desktop)
+  grid.addEventListener('mousedown', e => {
+    game.dragStart(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mousemove', e => {
+    game.dragMove(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mouseup', () => game.dragEnd());
 });
 </script>
 </body>
