@@ -502,7 +502,8 @@ class Game {
       this.countdown = getValue('countdown');
       this.guesses = getGuesses();
       this.wordCounts = getWordCounts();
-      this.areaContent = getArea();
+      const raw = getArea().trim();
+      this.areaContent = raw ? raw.split(' ').sort((a, b) => a.localeCompare(b)).join(' ') + ' ' : '';
     } else { // A new game
       this.score = 0;
       setValue('score', this.score);
@@ -805,7 +806,10 @@ class Game {
   }
 
   updateArea(word, s) {
-    this.areaContent += `${word}-${s} `;
+    const entries = this.areaContent.trim() ? this.areaContent.trim().split(' ') : [];
+    entries.push(`${word}-${s}`);
+    entries.sort((a, b) => a.localeCompare(b));
+    this.areaContent = entries.join(' ') + ' ';
     this.areaEl.textContent = this.areaContent;
     setValue('area', this.areaContent);
   }
