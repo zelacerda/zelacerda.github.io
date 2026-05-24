@@ -365,6 +365,7 @@ function getStats() {
 const TONE_FREQS = [415, 310, 252, 209];
 
 let audioCtx = null;
+let activeNote = null;
 
 function initAudio() {
   if (!audioCtx) {
@@ -379,6 +380,7 @@ function initAudio() {
 
 function playTone(idx, durationMs) {
   if (!audioCtx) return;
+  stopTone();
   const t = audioCtx.currentTime;
   const dur = durationMs / 1000;
   const osc = audioCtx.createOscillator();
@@ -388,15 +390,43 @@ function playTone(idx, durationMs) {
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(0.25, t + 0.01);
-  gain.gain.setValueAtTime(0.25, t + Math.max(0.02, dur - 0.04));
+  gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
+  gain.gain.setValueAtTime(0.4, t + Math.max(0.02, dur - 0.04));
   gain.gain.linearRampToValueAtTime(0, t + dur);
   osc.start(t);
   osc.stop(t + dur + 0.02);
 }
 
+function startTone(idx) {
+  if (!audioCtx) return;
+  stopTone();
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = TONE_FREQS[idx];
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
+  osc.start(t);
+  activeNote = { osc, gain };
+}
+
+function stopTone() {
+  if (!activeNote || !audioCtx) return;
+  const { osc, gain } = activeNote;
+  activeNote = null;
+  const t = audioCtx.currentTime;
+  gain.gain.cancelScheduledValues(t);
+  gain.gain.setValueAtTime(gain.gain.value, t);
+  gain.gain.linearRampToValueAtTime(0, t + 0.04);
+  osc.stop(t + 0.06);
+}
+
 function playError() {
   if (!audioCtx) return;
+  stopTone();
   const t = audioCtx.currentTime;
   const dur = 1.5;
   const osc = audioCtx.createOscillator();
@@ -687,7 +717,6 @@ class Game {
 
   handleInput(idx) {
     if (this.state !== State.WAITING_INPUT) return;
-    this.flashCell(idx, 220);
 
     const expected = this.getTone(this.playerStep);
     if (idx !== expected) {
@@ -724,8 +753,6 @@ class Game {
 
     if (id === 'start-btn' && this.state === State.READY) {
       this.startGame();
-    } else if (id.substring(0, 5) === 'cell-' && this.state === State.WAITING_INPUT) {
-      this.handleInput(parseInt(id.substring(5)));
     } else if (id === 'about' && !modalOpen && !inPlay) {
       this.about();
     } else if (id === 'stats' && !modalOpen && !inPlay) {
@@ -760,6 +787,24 @@ class Game {
 
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game();
+  document.body.addEventListener('pointerdown', e => {
+    const id = e.target.id;
+    if (id && id.substring(0, 5) === 'cell-') {
+      initAudio();
+      if (game.state === State.WAITING_INPUT) {
+        const idx = parseInt(id.substring(5));
+        e.target.classList.add('active');
+        startTone(idx);
+        game.handleInput(idx);
+      }
+    }
+  });
+  const releaseCell = () => {
+    for (const cell of game.cells) cell.classList.remove('active');
+    stopTone();
+  };
+  document.body.addEventListener('pointerup', releaseCell);
+  document.body.addEventListener('pointercancel', releaseCell);
   document.body.addEventListener('click', e => {
     initAudio();
     game.clickHandler(e);
