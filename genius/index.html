@@ -390,8 +390,8 @@ function playTone(idx, durationMs) {
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
-  gain.gain.setValueAtTime(0.4, t + Math.max(0.02, dur - 0.04));
+  gain.gain.linearRampToValueAtTime(0.7, t + 0.01);
+  gain.gain.setValueAtTime(0.7, t + Math.max(0.02, dur - 0.04));
   gain.gain.linearRampToValueAtTime(0, t + dur);
   osc.start(t);
   osc.stop(t + dur + 0.02);
@@ -408,7 +408,7 @@ function startTone(idx) {
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
+  gain.gain.linearRampToValueAtTime(0.7, t + 0.01);
   osc.start(t);
   activeNote = { osc, gain };
 }
