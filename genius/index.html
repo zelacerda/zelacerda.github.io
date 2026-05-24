@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>genius</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0, viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23000'/><path d='M16 16 L16 2 A14 14 0 0 0 2 16 Z' fill='%230c4'/><path d='M16 16 L30 16 A14 14 0 0 0 16 2 Z' fill='%23cc0'/><path d='M16 16 L2 16 A14 14 0 0 0 16 30 Z' fill='%23c00'/><path d='M16 16 L16 30 A14 14 0 0 0 30 16 Z' fill='%231ac'/><circle cx='16' cy='16' r='4' fill='%23000'/></svg>">
+<style>
+body{
+    font-family: 'Candara', 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+    text-align: center;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    background-color: #333;
+    color: #fff;
+    user-select: none;
+}
+
+#all-container{
+    display: grid;
+    grid-template-rows: 60px auto auto;
+    height: 100%;
+    max-width: 360px;
+    margin: auto;
+}
+
+#header-container{
+    display: grid;
+    grid-template-columns: 45px auto 45px;
+}
+
+#title{
+    text-align: center;
+    font-size: 45px;
+    font-weight: 950;
+    color: #fff;
+    margin-top: 5px;
+}
+
+.top-button{
+    font-size: 36px;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+#genius-board{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    width: 340px;
+    height: 340px;
+    margin: 25px auto 10px;
+    background-color: #000;
+    padding: 16px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.cell{
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    filter: brightness(0.6);
+    transition: filter 0.05s;
+}
+
+/* Textura rugosa de plástico — ruído fractal SVG sobreposto via blend */
+.cell::after{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    opacity: 0.45;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+/* Halo central — aparece quando o botão acende, com luz concentrada no meio */
+.cell::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at center, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    transition: opacity 0.05s;
+    pointer-events: none;
+    z-index: 1;
+}
+
+#cell-0{
+    background-color: #0c4;
+    border-top-left-radius: 100%;
+    border-bottom-right-radius: 55px;
+}
+
+#cell-1{
+    background-color: #cc0;
+    border-top-right-radius: 100%;
+    border-bottom-left-radius: 55px;
+}
+
+#cell-2{
+    background-color: #c00;
+    border-bottom-left-radius: 100%;
+    border-top-right-radius: 55px;
+}
+
+#cell-3{
+    background-color: #1ac;
+    border-bottom-right-radius: 100%;
+    border-top-left-radius: 55px;
+}
+
+.cell.active{
+    filter: brightness(1.4);
+}
+
+.cell.active::before{
+    opacity: 1;
+}
+
+#genius-board.game-over .cell{
+    background-color: #555;
+    filter: none;
+    cursor: default;
+}
+
+#genius-board.game-over .cell::before,
+#genius-board.game-over .cell::after{
+    display: none;
+}
+
+#level-display{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background-color: #000;
+    color: #cc6;
+    font-size: 44px;
+    font-weight: 950;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#status-area{
+    text-align: center;
+    min-height: 70px;
+    margin: 10px 0;
+    color: #cc6;
+    font-size: 32px;
+    font-weight: 700;
+    padding-top: 14px;
+}
+
+#start-btn{
+    background-color: #cc6;
+    color: #222;
+    font-weight: 950;
+    font-size: 22px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: inline-block;
+    box-shadow: inset 0 0.3rem #ffc, inset 0 -0.3rem #996, inset 0.3rem 0 #ffc, inset -0.3rem 0 #996;
+}
+
+#modal {
+    z-index: 1;
+    position: fixed;
+    text-align: left;
+    width: 320px;
+    margin: 0 10px;
+    top: 70px;
+    height: 430px;
+    font-size: 17px;
+    background-color: #222;
+    color: #ccc;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+#modal-close {
+    text-align: left;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.hidden { visibility: hidden; }
+.visible { visibility: visible; }
+
+.text-highlight {
+    color: #fff;
+    font-weight: 950;
+}
+
+.credit {
+    color: #cc6;
+    font-size: 14px;
+}
+
+h2 {
+    font-size: 28px;
+    color: #cc6;
+}
+
+a {
+    color: #ccc;
+}
+
+#stats-tooltip{
+    text-align: center;
+    min-height: 22px;
+    margin-top: 4px;
+}
+
+#stats-chart{
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 115px;
+    margin-top: 4px;
+}
+
+.stats-bar-col{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+}
+
+.stats-bar-wrapper{
+    flex: 1;
+    width: 65%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.stats-bar{
+    width: 100%;
+    background-color: #cc6;
+    border-radius: 4px 4px 0 0;
+    min-height: 3px;
+    cursor: pointer;
+}
+
+.stats-bar.selected{
+    background-color: #ffc;
+}
+
+.stats-bar-label{
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ccc;
+}
+</style>
+</head>
+<body>
+<script>
+// ============================================================
+// Utils
+// ============================================================
+
+function mulberry32(seed) {
+  return function() {
+    seed |= 0;
+    seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function getDayGame() {
+  const initTime = 1644116400; // 2022-02-06 00:00, mesma referência do tort.ooo
+  const now = Math.floor(Date.now() / 1000);
+  return Math.floor((now - initTime) / 86400) + 1;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ============================================================
+// Storage
+// ============================================================
+
+function getValue(key) {
+  const value = localStorage.getItem(key);
+  if (!value) return 0;
+  return parseInt(value) || 0;
+}
+
+function setValue(key, value) {
+  localStorage.setItem(key, String(value));
+}
+
+function incrementKey(key, amount) {
+  if (amount === undefined) amount = 1;
+  const value = localStorage.getItem(key);
+  if (!value) {
+    localStorage.setItem(key, String(amount));
+  } else {
+    localStorage.setItem(key, String(parseInt(value) + amount));
+  }
+}
+
+function scoreToBin(score) {
+  if (score <= 7) return 0;
+  if (score <= 11) return 1;
+  if (score <= 15) return 2;
+  if (score <= 19) return 3;
+  if (score <= 23) return 4;
+  return 5;
+}
+
+function updateStats(score) {
+  const bin = scoreToBin(score);
+  const keys = ['genius_b0', 'genius_b1', 'genius_b2', 'genius_b3', 'genius_b4', 'genius_b5'];
+  incrementKey(keys[bin]);
+  incrementKey('genius_games');
+  incrementKey('genius_sum', score);
+}
+
+function getStats() {
+  const result = {};
+  result.record = getValue('genius_record');
+
+  const games = getValue('genius_games');
+  const sumScore = getValue('genius_sum');
+  result.mean = games === 0 ? 0 : Math.round(sumScore / games);
+  result.games = games;
+
+  const counts = ['genius_b0', 'genius_b1', 'genius_b2', 'genius_b3', 'genius_b4', 'genius_b5']
+    .map(k => getValue(k));
+  result.counts = counts;
+
+  const total = counts.reduce((a, b) => a + b, 0);
+  result.pcts = total === 0 ? counts.slice() : counts.map(i => Math.round(i / total * 100));
+
+  return result;
+}
+
+// ============================================================
+// Audio (Web Audio API com os tons canônicos do Simon original)
+// ============================================================
+
+// Ordem (disposição do Genius original): 0 verde (sup. esq.),
+// 1 amarelo (sup. dir.), 2 vermelho (inf. esq.), 3 azul (inf. dir.).
+// Os tons são mapeados pela posição: do mais agudo (sup. esq.)
+// ao mais grave (inf. dir.), formando um G#m através de duas oitavas.
+const TONE_FREQS = [415, 310, 252, 209];
+
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playTone(idx, durationMs) {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const dur = durationMs / 1000;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = TONE_FREQS[idx];
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.25, t + 0.01);
+  gain.gain.setValueAtTime(0.25, t + Math.max(0.02, dur - 0.04));
+  gain.gain.linearRampToValueAtTime(0, t + dur);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
+function playError() {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(110, t);
+  osc.frequency.linearRampToValueAtTime(42, t + 0.7);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.28, t + 0.02);
+  gain.gain.setValueAtTime(0.28, t + 0.6);
+  gain.gain.linearRampToValueAtTime(0, t + 0.75);
+  osc.start(t);
+  osc.stop(t + 0.8);
+}
+
+// ============================================================
+// Modal
+// ============================================================
+
+function plural(n) {
+  return n === 1 ? 'partida' : 'partidas';
+}
+
+function showAbout() {
+  return `
+    <h2><center>SOBRE O JOGO</center></h2>
+    <span class="text-highlight">genius</span> é uma simulação do
+    brinquedo eletrônico de memória <i>Genius</i>, distribuído no
+    Brasil pela Estrela a partir de 1978 — uma versão do <i>Simon</i>,
+    da Milton Bradley.<br><br>
+
+    Observe a sequência de cores e sons e repita-a na mesma ordem.
+    A cada acerto, a sequência ganha um novo elemento.
+    Diferente do brinquedo original, aqui a sequência é
+    <b>ilimitada</b>: seu nível só termina quando você erra.
+    <br><br>
+    <center><span class="credit">
+    De Floripa com ❤️ por
+    <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a><br>
+    versão 1.26.5.24 - Maio/2026
+    </span></center>
+  `;
+}
+
+function showStats() {
+  const stats = getStats();
+  const labels = ['0-7', '8-11', '12-15', '16-19', '20-23', '24+'];
+  const fullLabels = [
+    'nível de 0 a 7', 'nível de 8 a 11', 'nível de 12 a 15',
+    'nível de 16 a 19', 'nível de 20 a 23', 'nível 24 ou mais'
+  ];
+  const maxCount = Math.max(...stats.counts, 1);
+
+  const bars = stats.counts.map((c, i) => {
+    const h = Math.round((c / maxCount) * 100);
+    return `<div class="stats-bar-col">
+      <div class="stats-bar-wrapper">
+        <div class="stats-bar" id="stats-bar-${i}" data-count="${c}" data-pct="${stats.pcts[i]}" data-label="${fullLabels[i]}" style="height:${h}%"></div>
+      </div>
+      <div class="stats-bar-label">${labels[i]}</div>
+    </div>`;
+  }).join('');
+
+  return `
+    <h2><center>DADOS HISTÓRICOS</center></h2>
+    Maior nível alcançado: <b>${stats.record}</b><br>
+    Nível médio por partida: <b>${stats.mean}</b><br>
+    Total de partidas: <b>${stats.games}</b><br><br>
+    <b>Partidas por nível alcançado:</b>
+    <div id="stats-tooltip">&nbsp;</div>
+    <div id="stats-chart">${bars}</div>
+  `;
+}
+
+function showGameOver(game, score, prevRecord) {
+  const title = score > prevRecord ? 'NOVO RECORDE!' : 'FIM DO JOGO!';
+  const txt = `Cheguei ao nível ${score} no genius de hoje (#${game})`;
+
+  return `
+    <h2><center>${title}</center></h2>
+    Você chegou ao <b>nível ${score}</b>.<br><br>
+    <center>
+    <a href="javascript:share('${txt}')">Compartilhe aqui seu resultado</a>
+    </center>
+    <h3><center>E amanhã tem mais!</center></h3>
+  `;
+}
+
+// ============================================================
+// Share
+// ============================================================
+
+function share(text) {
+  if (navigator.share) {
+    navigator.share({title: text, text: text})
+      .then(() => console.log('Successful share'))
+      .catch((error) => console.log('Error sharing:', error));
+  } else {
+    navigator.clipboard.writeText(text)
+      .then(() => alert('Resultado copiado para a área de transferência.'))
+      .catch((error) => console.error('Clipboard error:', error));
+  }
+}
+
+// ============================================================
+// DOM helpers
+// ============================================================
+
+function div(text, id, className) {
+  const el = document.createElement('div');
+  if (text) el.textContent = text;
+  if (id) el.id = id;
+  if (className) el.className = className;
+  return el;
+}
+
+// ============================================================
+// Game
+// ============================================================
+
+const State = {
+  READY: 0,
+  PLAYING_SEQ: 1,
+  WAITING_INPUT: 2,
+  MODAL: 3,
+  GAME_OVER: 4
+};
+
+class Game {
+  constructor() {
+    this.initGame();
+    this.renderPage();
+    this.checkState();
+  }
+
+  initGame() {
+    this.game = getDayGame();
+    this.rng = mulberry32(this.game);
+    this.sequence = [];
+    this.playerStep = 0;
+    this.state = State.READY;
+    this.recordAtStart = getValue('genius_record');
+
+    const savedGame = getValue('genius_game');
+    if (savedGame === this.game) {
+      this.score = getValue('genius_score');
+      this.started = getValue('genius_started') === 1;
+      this.finished = getValue('genius_finished') === 1;
+    } else {
+      this.score = 0;
+      this.started = false;
+      this.finished = false;
+      setValue('genius_score', 0);
+      setValue('genius_started', 0);
+      setValue('genius_finished', 0);
+    }
+  }
+
+  getTone(idx) {
+    while (this.sequence.length <= idx) {
+      this.sequence.push(Math.floor(this.rng() * 4));
+    }
+    return this.sequence[idx];
+  }
+
+  renderPage() {
+    // Cabeçalho
+    const about = div('ℹ️', 'about', 'top-button');
+    const title = div('genius', 'title');
+    const stats = div('🎲', 'stats', 'top-button');
+
+    const header = div(null, 'header-container');
+    header.appendChild(about);
+    header.appendChild(title);
+    header.appendChild(stats);
+
+    // Tabuleiro do Genius (4 quadrantes + indicador de nível no centro)
+    this.boardEl = div(null, 'genius-board');
+    this.cells = [];
+    for (let i = 0; i < 4; i++) {
+      const c = div(null, 'cell-' + i, 'cell');
+      this.cells.push(c);
+      this.boardEl.appendChild(c);
+    }
+    this.levelDisplay = div(String(this.score), 'level-display');
+    this.boardEl.appendChild(this.levelDisplay);
+
+    // Área de status (mensagens e botão de início)
+    this.statusEl = div(null, 'status-area');
+    this.statusEl.innerHTML = '<div id="start-btn">INICIAR PARTIDA</div>';
+
+    // Modal
+    this.modalEl = div(null, 'modal', 'hidden');
+    this.modalContentEl = div();
+    this.modalEl.appendChild(div('❌', 'modal-close'));
+    this.modalEl.appendChild(this.modalContentEl);
+
+    const all = div(null, 'all-container');
+    all.appendChild(header);
+    all.appendChild(this.boardEl);
+    all.appendChild(this.statusEl);
+    all.appendChild(this.modalEl);
+
+    document.body.appendChild(all);
+  }
+
+  checkState() {
+    const savedGame = getValue('genius_game');
+    if (!savedGame) {
+      // Primeiro acesso ao genius
+      this.about();
+    } else if (this.started) {
+      if (this.finished) {
+        // Já jogou e terminou hoje
+        this.showGameOverModal();
+      } else {
+        // Iniciou mas fechou a aba — partida termina aqui
+        this.finishGame();
+      }
+    }
+    setValue('genius_game', this.game);
+  }
+
+  about() {
+    this.modalContentEl.innerHTML = showAbout();
+    this.modalEl.className = 'visible';
+    this.state = State.MODAL;
+  }
+
+  showGameOverModal() {
+    this.boardEl.classList.add('game-over');
+    this.statusEl.textContent = '';
+    this.modalContentEl.innerHTML = showGameOver(this.game, this.score, this.recordAtStart);
+    this.modalEl.className = 'visible';
+    this.state = State.GAME_OVER;
+  }
+
+  finishGame() {
+    this.finished = true;
+    setValue('genius_finished', 1);
+    if (this.score > this.recordAtStart) {
+      setValue('genius_record', this.score);
+    }
+    updateStats(this.score);
+    this.showGameOverModal();
+  }
+
+  startGame() {
+    this.started = true;
+    setValue('genius_started', 1);
+    this.statusEl.textContent = '';
+    this.startRound();
+  }
+
+  getTiming() {
+    const level = this.score + 1;
+    if (level <= 5) return { tone: 420, gap: 80 };
+    if (level <= 13) return { tone: 320, gap: 60 };
+    return { tone: 220, gap: 40 };
+  }
+
+  async startRound() {
+    this.state = State.PLAYING_SEQ;
+    this.playerStep = 0;
+    this.statusEl.textContent = 'Atenção…';
+    const { tone, gap } = this.getTiming();
+    await sleep(600);
+
+    const upTo = this.score + 1;
+    for (let i = 0; i < upTo; i++) {
+      if (this.state !== State.PLAYING_SEQ) return;
+      this.flashCell(this.getTone(i), tone);
+      await sleep(tone + gap);
+    }
+
+    if (this.state !== State.PLAYING_SEQ) return;
+    this.statusEl.textContent = 'Sua vez!';
+    this.state = State.WAITING_INPUT;
+  }
+
+  flashCell(idx, durationMs) {
+    const cell = this.cells[idx];
+    cell.classList.add('active');
+    playTone(idx, durationMs);
+    setTimeout(() => cell.classList.remove('active'), durationMs);
+  }
+
+  handleInput(idx) {
+    if (this.state !== State.WAITING_INPUT) return;
+    this.flashCell(idx, 220);
+
+    const expected = this.getTone(this.playerStep);
+    if (idx !== expected) {
+      this.state = State.PLAYING_SEQ; // bloqueia mais cliques
+      setTimeout(() => {
+        playError();
+        this.boardEl.classList.add('game-over');
+        setTimeout(() => this.finishGame(), 900);
+      }, 250);
+      return;
+    }
+
+    this.playerStep++;
+    if (this.playerStep > this.score) {
+      // Rodada completa
+      this.score++;
+      setValue('genius_score', this.score);
+      this.levelDisplay.textContent = String(this.score);
+      if (this.score > getValue('genius_record')) {
+        // Recorde é gravado em tempo real; recordAtStart guarda o anterior
+        // para o modal final decidir se é "NOVO RECORDE!"
+        setValue('genius_record', this.score);
+      }
+      this.state = State.PLAYING_SEQ;
+      this.statusEl.textContent = 'Acertou! 🎉';
+      setTimeout(() => this.startRound(), 900);
+    }
+  }
+
+  clickHandler(event) {
+    const id = event.target.id;
+    const modalOpen = this.modalEl.className === 'visible';
+    const inPlay = this.state === State.PLAYING_SEQ || this.state === State.WAITING_INPUT;
+
+    if (id === 'start-btn' && this.state === State.READY) {
+      this.startGame();
+    } else if (id.substring(0, 5) === 'cell-' && this.state === State.WAITING_INPUT) {
+      this.handleInput(parseInt(id.substring(5)));
+    } else if (id === 'about' && !modalOpen && !inPlay) {
+      this.about();
+    } else if (id === 'stats' && !modalOpen && !inPlay) {
+      this.modalContentEl.innerHTML = showStats();
+      this.modalEl.className = 'visible';
+      this.state = State.MODAL;
+    } else if (id === 'modal-close') {
+      this.modalEl.className = 'hidden';
+      if (this.finished) {
+        this.state = State.GAME_OVER;
+      } else {
+        this.state = State.READY;
+      }
+    } else if (id.substring(0, 10) === 'stats-bar-') {
+      this.selectStatsBar(event.target);
+    }
+  }
+
+  selectStatsBar(bar) {
+    document.querySelectorAll('.stats-bar.selected').forEach(b => b.classList.remove('selected'));
+    bar.classList.add('selected');
+    const tooltip = document.getElementById('stats-tooltip');
+    if (!tooltip) return;
+    const count = parseInt(bar.dataset.count);
+    tooltip.innerHTML = `${bar.dataset.label}: <b>${count}</b> ${plural(count)} (<b>${bar.dataset.pct}%</b>)`;
+  }
+}
+
+// ============================================================
+// Entry point
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  const game = new Game();
+  document.body.addEventListener('click', e => {
+    initAudio();
+    game.clickHandler(e);
+  });
+});
+</script>
+</body>
+</html>
