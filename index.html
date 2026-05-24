@@ -105,9 +105,17 @@ body{
 }
 
 .top-button{
-    font-size: calc(36 * var(--s));
+    font-size: calc(27 * var(--s));
+    font-weight: 800;
     text-align: center;
-    margin-top: calc(6 * var(--s));
+    padding-top: calc(2 * var(--s));
+    border-style: solid;
+    border-color: #555;
+    border-width: calc(2 * var(--s));
+    border-radius: 15%;
+    background-color: #444;
+    color: #999;
+    margin-top: calc(10 * var(--s));
     margin-bottom: calc(10 * var(--s));
     cursor: pointer;
 }
@@ -165,9 +173,21 @@ body{
 }
 
 #modal-close {
-    text-align: left;
-    font-size: calc(24 * var(--s));
+    width: calc(28 * var(--s));
+    height: calc(28 * var(--s));
+    box-sizing: border-box;
+    text-align: center;
+    font-size: calc(20 * var(--s));
+    font-weight: 950;
+    border-style: solid;
+    border-color: #555;
+    border-width: calc(2 * var(--s));
+    border-radius: 15%;
+    background-color: #444;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hidden {
@@ -207,7 +227,7 @@ a {
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    height: calc(115 * var(--s));
+    height: calc(130 * var(--s));
     margin-top: calc(4 * var(--s));
 }
 
@@ -576,9 +596,9 @@ class Game {
 
   renderPage() {
     // Header container
-    const about = div('ℹ️', 'about', 'top-button');
+    const about = div('?', 'about', 'top-button');
     const title = div('tort.ooo', 'title');
-    const stats = div('🎲', 'stats', 'top-button');
+    const stats = div('Σ', 'stats', 'top-button');
 
     const header = div(null, 'header-container');
     header.appendChild(about);
@@ -620,7 +640,7 @@ class Game {
     // Modal box
     this.modalEl = div(null, 'modal', 'hidden');
     this.modalContentEl = div();
-    this.modalEl.appendChild(div('❌', 'modal-close'));
+    this.modalEl.appendChild(div('X', 'modal-close'));
     this.modalEl.appendChild(this.modalContentEl);
 
     // Putting all containers together and render page
