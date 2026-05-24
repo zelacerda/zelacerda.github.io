@@ -96,17 +96,11 @@ body{
 }
 
 .top-button{
-    font-size:27px;
-    font-weight: 800;
+    font-size: 36px;
     text-align: center;
-    padding-top: 2px;
-    border-style: solid;
-    border-color: #555;
-    border-width: 2px;
-    border-radius: 15%;
-    color: #999;
-    margin-top: 10px;
+    margin-top: 6px;
     margin-bottom: 10px;
+    cursor: pointer;
 }
 
 #title{
@@ -159,15 +153,9 @@ body{
   }
 
 #modal-close {
-    width: 20px;
-    text-align: center;
-    padding: 5px 3px 3px 3px;
-    font-size: 16px;
-    font-weight: 950;
-    border-style: solid;
-    border-color: #555;
-    border-width: 2px;
-    border-radius: 15%;
+    text-align: left;
+    font-size: 24px;
+    cursor: pointer;
 }
 
 .hidden {
@@ -195,6 +183,54 @@ h2 {
 
 a {
     color:#ccc
+}
+
+#stats-tooltip{
+    text-align: center;
+    min-height: 22px;
+    margin-top: 4px;
+}
+
+#stats-chart{
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 115px;
+    margin-top: 4px;
+}
+
+.stats-bar-col{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+}
+
+.stats-bar-wrapper{
+    flex: 1;
+    width: 65%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.stats-bar{
+    width: 100%;
+    background-color: #cc6;
+    border-radius: 4px 4px 0 0;
+    min-height: 3px;
+    cursor: pointer;
+}
+
+.stats-bar.selected{
+    background-color: #ffc;
+}
+
+.stats-bar-label{
+    margin-top: 6px;
+    font-size: 14px;
+    color: #ccc;
 }
 </style>
 </head>
@@ -388,27 +424,35 @@ function showAbout() {
     <center><span class="credit">
     De Floripa com ❤️ por
     <a href="https://github.com/zelacerda/zelacerda.github.io" target="_blank">zelacerda</a><br>
-    versão 1.22.7.30 - Jul/2022
+    versão 1.26.5.24 - Maio/2026
     </span></center>
   `;
 }
 
 function showStats() {
   const stats = getStats();
+  const labels = ['3', '4', '5', '6', '7', '8+'];
+  const fullLabels = ['3 letras', '4 letras', '5 letras', '6 letras', '7 letras', '8+ letras'];
+  const maxCount = Math.max(...stats.counts, 1);
+
+  const bars = stats.counts.map((c, i) => {
+    const h = Math.round((c / maxCount) * 100);
+    return `<div class="stats-bar-col">
+      <div class="stats-bar-wrapper">
+        <div class="stats-bar" id="stats-bar-${i}" data-count="${c}" data-pct="${stats.pcts[i]}" data-label="${fullLabels[i]}" style="height:${h}%"></div>
+      </div>
+      <div class="stats-bar-label">${labels[i]}</div>
+    </div>`;
+  }).join('');
+
   return `
-    <h2><center>ESTATÍSTICAS</center></h2>
+    <h2><center>DADOS HISTÓRICOS</center></h2>
     Recorde de pontos: <b>${stats.record}</b><br>
     Média de pontos por jogo: <b>${stats.mean}</b><br>
     Total de jogos: <b>${stats.games}</b><br><br>
-    <b>Palavras por número de letras:</b><br><br>
-    <center>
-    3 letras: <b>${stats.counts[0]} (${stats.pcts[0]}%)</b><br>
-    4 letras: <b>${stats.counts[1]} (${stats.pcts[1]}%)</b><br>
-    5 letras: <b>${stats.counts[2]} (${stats.pcts[2]}%)</b><br>
-    6 letras: <b>${stats.counts[3]} (${stats.pcts[3]}%)</b><br>
-    7 letras: <b>${stats.counts[4]} (${stats.pcts[4]}%)</b><br>
-    + letras: <b>${stats.counts[5]} (${stats.pcts[5]}%)</b>
-    </center>
+    <b>Palavras por número de letras:</b>
+    <div id="stats-tooltip">&nbsp;</div>
+    <div id="stats-chart">${bars}</div>
   `;
 }
 
@@ -520,9 +564,9 @@ class Game {
 
   renderPage() {
     // Header container
-    const about = div('?', 'about', 'top-button');
+    const about = div('ℹ️', 'about', 'top-button');
     const title = div('tort.ooo', 'title');
-    const stats = div('+', 'stats', 'top-button');
+    const stats = div('🎲', 'stats', 'top-button');
 
     const header = div(null, 'header-container');
     header.appendChild(about);
@@ -564,7 +608,7 @@ class Game {
     // Modal box
     this.modalEl = div(null, 'modal', 'hidden');
     this.modalContentEl = div();
-    this.modalEl.appendChild(div('X', 'modal-close'));
+    this.modalEl.appendChild(div('❌', 'modal-close'));
     this.modalEl.appendChild(this.modalContentEl);
 
     // Putting all containers together and render page
@@ -628,7 +672,18 @@ class Game {
       } else {
         this.state = State.PLAY;
       }
+    } else if (id.substring(0, 10) === 'stats-bar-') {
+      this.selectStatsBar(event.target);
     }
+  }
+
+  selectStatsBar(bar) {
+    document.querySelectorAll('.stats-bar.selected').forEach(b => b.classList.remove('selected'));
+    bar.classList.add('selected');
+    const tooltip = document.getElementById('stats-tooltip');
+    if (!tooltip) return;
+    const count = parseInt(bar.dataset.count);
+    tooltip.innerHTML = `${bar.dataset.label}: <b>${count}</b> ${plural(count)} (<b>${bar.dataset.pct}%</b>)`;
   }
 
   sendWord() {
